@@ -8,7 +8,6 @@ def load_input(fname):
 
 
 def part_a(puzzle_input):
-    directions = {'(': 1, ')': -1}
     pos = 0
     for char in puzzle_input:
         pos += directions[char]
@@ -17,7 +16,6 @@ def part_a(puzzle_input):
 
 
 def part_b(puzzle_input):
-    directions = {'(': 1, ')': -1}
     pos = 0
     for i, char in enumerate(puzzle_input, start=1):
         pos += directions[char]
@@ -27,6 +25,7 @@ def part_b(puzzle_input):
 
 def main(fname):
     puzzle_input = load_input(fname)
+    directions = {'(': 1, ')': -1}
     print(f'The Answer to Part A is: {tc.green(part_a(puzzle_input))}')
     print(f'The Answer to Part A is: {tc.green(part_b(puzzle_input))}')
 
