@@ -2,6 +2,9 @@ import sys
 import termcolor_util as tc
 
 
+DIRECTIONS = {'(': 1, ')': -1}
+
+
 def load_input(fname):
     with open(fname, 'r') as f:
         return f.read()
@@ -10,7 +13,7 @@ def load_input(fname):
 def part_a(puzzle_input):
     pos = 0
     for char in puzzle_input:
-        pos += directions[char]
+        pos += DIRECTIONS[char]
 
     return pos
 
@@ -18,14 +21,13 @@ def part_a(puzzle_input):
 def part_b(puzzle_input):
     pos = 0
     for i, char in enumerate(puzzle_input, start=1):
-        pos += directions[char]
+        pos += DIRECTIONS[char]
         if pos < 0:
             return i
 
 
 def main(fname):
     puzzle_input = load_input(fname)
-    directions = {'(': 1, ')': -1}
     print(f'The Answer to Part A is: {tc.green(part_a(puzzle_input))}')
     print(f'The Answer to Part A is: {tc.green(part_b(puzzle_input))}')
 
