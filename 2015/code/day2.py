@@ -18,8 +18,8 @@ class Gift(namedtuple('Gift', ['l', 'w', 'h'])):
         return reduce(operator.mul, self)  # Easy scale to more dimensions
 
     def smallest_perim(self):
-        edges = sorted(self)[:2]  # namedtuple has an __iter__() method
-        return 2 * reduce(operator.add, edges)  # Easy scale to more dimensions
+        edges = sorted(self)[:2]
+        return 2 * reduce(operator.add, edges)
 
     def ribbon_req(self):
         return self.smallest_perim() + self.bow_size()
@@ -43,7 +43,7 @@ def main(fname):
     puzzle_input = load_input(fname)
     print(f'The Answer to Part A is: {tc.green(part_a(puzzle_input))}')
     puzzle_input = load_input(fname)
-    print(f'The Answer to Part A is: {tc.green(part_b(puzzle_input))}')
+    print(f'The Answer to Part B is: {tc.green(part_b(puzzle_input))}')
 
 
 if __name__ == '__main__':

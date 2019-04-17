@@ -29,7 +29,7 @@ def part_b(puzzle_input):
 def main(fname):
     puzzle_input = load_input(fname)
     print(f'The Answer to Part A is: {tc.green(part_a(puzzle_input))}')
-    print(f'The Answer to Part A is: {tc.green(part_b(puzzle_input))}')
+    print(f'The Answer to Part B is: {tc.green(part_b(puzzle_input))}')
 
 
 if __name__ == '__main__':
