@@ -39,15 +39,19 @@ def part_b(puzzle_input):
     return sum(gift.ribbon_req() for gift in puzzle_input)
 
 
-def main(fname):
+def main(fname, loadtype='disk'):
     puzzle_input = load_input(fname)
+    if loadtype == 'memory':  # Load input into memory
+        puzzle_input = list(puzzle_input)
     print(f'The Answer to Part A is: {tc.green(part_a(puzzle_input))}')
-    puzzle_input = load_input(fname)
+
+    if loadtype == 'disk':  # Running live generators off disk, need to reinitialize for Part B
+        puzzle_input = load_input(fname)
     print(f'The Answer to Part B is: {tc.green(part_b(puzzle_input))}')
 
 
 if __name__ == '__main__':
-    if len(sys.argv) != 2:
-        print('USAGE: python [script.py] [input.txt]')
+    if len(sys.argv) not in (2, 3):
+        print('USAGE: python [script.py] [input.txt] (disk/memory)')
     else:
-        main(sys.argv[1])
+        main(sys.argv[1:])
