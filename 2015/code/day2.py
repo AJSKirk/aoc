@@ -54,4 +54,4 @@ if __name__ == '__main__':
     if len(sys.argv) not in (2, 3):
         print('USAGE: python [script.py] [input.txt] (disk/memory)')
     else:
-        main(sys.argv[1:])
+        main(*sys.argv[1:])
