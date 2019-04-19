@@ -5,30 +5,16 @@ import itertools
 
 
 Point = namedtuple('Point', ['x', 'y'])
-
-
-class Instruction(namedtuple('Instruction', ['command_name', 'from_point', 'to_point'])):
-    @property
-    def command_fn(self):
-        if self.command_name == 'turn off':
-            return lambda point: False
-        if self.command_name == 'turn on':
-            return lambda point: True
-        if self.command_name == 'toggle':
-            return lambda point: point is False  # boolean switch
+Instruction = namedtuple('Instruction', ['command_name', 'from_point', 'to_point'])
 
 
 class Grid(defaultdict):
-    def __init__(self):
-        super().__init__()
-        self.default_factory = bool
-
-    def operate(self, instruction):
+    def operate(self, instruction, instruction_set):
         x_range = range(instruction.from_point.x, instruction.to_point.x + 1)
         y_range = range(instruction.from_point.y, instruction.to_point.y + 1)
 
         for x, y in itertools.product(x_range, y_range):
-            self[Point(x, y)] = instruction.command_fn(self[Point(x, y)])
+            self[Point(x, y)] = instruction_set[instruction.command_name](self[Point(x, y)])
 
 
 def load_input(fname):
@@ -57,14 +43,27 @@ def parse_line(line):
 
 
 def part_a(puzzle_input):
-    grid = Grid()
+    grid = Grid(bool)
+    instruction_set = {
+        'turn on': lambda point: True,
+        'turn off': lambda point: False,
+        'toggle': lambda point: point is False
+    }
     for instruction in puzzle_input:
-        grid.operate(instruction)
+        grid.operate(instruction, instruction_set)
     return sum(1 for point in grid.values() if point)
 
 
 def part_b(puzzle_input):
-    pass
+    grid = Grid(int)
+    instruction_set = {
+        'turn on': lambda point: point + 1,
+        'turn off': lambda point: max(0, point - 1),
+        'toggle': lambda point: point + 2
+    }
+    for instruction in puzzle_input:
+        grid.operate(instruction, instruction_set)
+    return sum(point for point in grid.values())
 
 
 def main(fname, loadtype='disk'):
