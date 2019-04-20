@@ -51,18 +51,19 @@ def part_a(puzzle_input):
     return puzzle_input.pull('a')
 
 
-def part_b(puzzle_input):
-    pass
+def part_b(puzzle_input, fix):
+    puzzle_input['b'] = Wire(str(fix), puzzle_input)
+    return puzzle_input.pull('a')
 
 def main(fname, loadtype='disk'):
     puzzle_input = load_input(fname)
     if loadtype == 'memory':  # Load input into memory
         puzzle_input = list(puzzle_input)
-    print(f'The Answer to Part A is: {tc.green(part_a(puzzle_input))}')
+    a_ans = part_a(puzzle_input)
+    print(f'The Answer to Part A is: {tc.green(a_ans)}')
 
-    if loadtype == 'disk':  # Running live generators off disk, need to reinitialize for Part B
-        puzzle_input = load_input(fname)
-    print(f'The Answer to Part B is: {tc.green(part_b(puzzle_input))}')
+    puzzle_input = load_input(fname)
+    print(f'The Answer to Part B is: {tc.green(part_b(puzzle_input, a_ans))}')
 
 
 if __name__ == '__main__':
