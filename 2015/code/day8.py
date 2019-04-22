@@ -5,16 +5,17 @@ import re
 class ListItem(str):
     @property
     def codelen(self):
-        slashes = self.count(r'\\')
-        return len(self)  # Because python adds slashes to escape the escape slashes
+        return len(self)
 
     @property
     def charlen(self):
-        char_rep = self
-        no_slashes = re.sub(r'\\\\', ' ', char_rep)  # Manually parse each to avoid collisions
-        no_quotes = re.sub(r'\\"', ' ', no_slashes)
-        no_hexes = re.sub(r'\\x[0-9a-f][0-9a-f]', ' ', no_quotes)
-        return len(no_hexes) - 2
+        return len(eval(self))
+
+    @property
+    def enclen(self):
+        slashes = self.count('\\')
+        quotes = self.count('"')
+        return self.codelen + slashes + quotes + 2
 
 
 def load_input(fname):
@@ -27,8 +28,8 @@ def part_a(puzzle_input):
     return sum(item.codelen - item.charlen for item in puzzle_input)
 
 
-def part_b(puzzle_input, fix):
-    pass
+def part_b(puzzle_input):
+    return sum(item.enclen - item.codelen for item in puzzle_input)
 
 
 def main(fname, loadtype='disk'):
@@ -39,7 +40,7 @@ def main(fname, loadtype='disk'):
     print(f'The Answer to Part A is: {tc.green(a_ans)}')
 
     puzzle_input = load_input(fname)
-    print(f'The Answer to Part B is: {tc.green(part_b(puzzle_input, a_ans))}')
+    print(f'The Answer to Part B is: {tc.green(part_b(puzzle_input))}')
 
 
 if __name__ == '__main__':
