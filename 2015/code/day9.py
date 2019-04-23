@@ -13,16 +13,16 @@ def load_input(fname):
     return paths
 
 
-def path_recurse(paths, hist=[], dist=0):
+def path_recurse(paths, hist=[], dist=0, fn=min):
     cities = set(paths.keys())
     if len(hist) == len(cities):
         return dist
 
     current_city = hist[-1]
     options = [city for city in paths[current_city].keys() if city not in hist]
-    cand_dists = [path_recurse(paths, hist + [cand], dist + paths[current_city][cand]) for cand in options]
+    cand_dists = [path_recurse(paths, hist + [cand], dist + paths[current_city][cand], fn=fn) for cand in options]
     cand_dists = [x for x in cand_dists if x]  # Filter out nones
-    return min(cand_dists) if cand_dists else None
+    return fn(cand_dists) if cand_dists else None
 
 
 def part_a(paths):
@@ -31,8 +31,10 @@ def part_a(paths):
     return min(seed_dists)
 
 
-def part_b(puzzle_input):
-    pass
+def part_b(paths):
+    seeds = [city for city in paths.keys()]
+    seed_dists = [x for x in [path_recurse(paths, [seed], fn=max) for seed in seeds] if x]
+    return max(seed_dists)
 
 
 def main(fname, loadtype='disk'):
