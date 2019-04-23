@@ -2,21 +2,6 @@ import sys
 import termcolor_util as tc
 from collections import defaultdict
 
-class ListItem(str):
-    @property
-    def codelen(self):
-        return len(self)
-
-    @property
-    def charlen(self):
-        return len(eval(self))
-
-    @property
-    def enclen(self):
-        slashes = self.count('\\')
-        quotes = self.count('"')
-        return self.codelen + slashes + quotes + 2
-
 
 def load_input(fname):
     paths = defaultdict(dict)
@@ -24,11 +9,26 @@ def load_input(fname):
         for line in f:
             start, _, end, _, dist = line.strip().split(' ')
             paths[start][end] = int(dist)
+            paths[end][start] = int(dist)  # Hacky symmetric dict
     return paths
 
 
+def path_recurse(paths, hist=[], dist=0):
+    cities = set(paths.keys())
+    if len(hist) == len(cities):
+        return dist
+
+    current_city = hist[-1]
+    options = [city for city in paths[current_city].keys() if city not in hist]
+    cand_dists = [path_recurse(paths, hist + [cand], dist + paths[current_city][cand]) for cand in options]
+    cand_dists = [x for x in cand_dists if x]  # Filter out nones
+    return min(cand_dists) if cand_dists else None
+
+
 def part_a(paths):
-    cities = set(paths.keys()) | set(to_city for from_city in paths.values() for to_city in from_city.keys())
+    seeds = [city for city in paths.keys()]
+    seed_dists = [x for x in [path_recurse(paths, [seed]) for seed in seeds] if x]
+    return min(seed_dists)
 
 
 def part_b(puzzle_input):
