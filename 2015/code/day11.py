@@ -15,7 +15,7 @@ class Password:
             self.text = f"{self.text[:pos]}{chr(ord(self.text[pos]) + 1)}{self.text[pos:][1:]}"
 
     @property
-    def is_valid_a(self):
+    def is_valid(self):
         if any(invalid in self.text for invalid in 'iol'):
             return False
 
@@ -34,19 +34,17 @@ class Password:
 
 
 def part_a(password):
-    while not password.is_valid_a:
+    while not password.is_valid:
         password.increment()
-    return password.text
-
-
-def part_b(password):
-    pass
+    return password
 
 
 def main(password_text):
     password = Password(password_text)
-    print(f'The Answer to Part A is: {tc.green(part_a(password))}')
-    print(f'The Answer to Part B is: {tc.green(part_b(password))}')
+    a_ans = part_a(password)
+    print(f'The Answer to Part A is: {tc.green(a_ans.text)}')
+    a_ans.increment()
+    print(f'The Answer to Part B is: {tc.green(part_a(a_ans).text)}')
 
 
 if __name__ == '__main__':
