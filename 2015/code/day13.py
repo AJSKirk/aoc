@@ -19,25 +19,22 @@ def score(arrangement, prefs):
     for i, person in enumerate(arrangement):
         left_neighbour = arrangement[i-1]
         right_neighbour = arrangement[(i+1) % len(arrangement)]
-        out += prefs[person][left_neighbour] + prefs[person][right_neighbour]
+        out += prefs[person].get(left_neighbour, 0) + prefs[person].get(right_neighbour, 0)
 
     return out
 
 
-def part_a(prefs):
+def best_arrangement(prefs):
     people = list(prefs.keys())
     first = people.pop()  # Fixed reference to exploit without loss of generality
     return max(score((first,) + tail_permute, prefs) for tail_permute in itertools.permutations(people))
 
 
-def part_b(puzzle_input):
-    pass
-
-
 def main(fname):
     puzzle_input = load_input(fname)
-    print(f'The Answer to Part A is: {tc.green(part_a(puzzle_input))}')
-    print(f'The Answer to Part B is: {tc.green(part_b(puzzle_input))}')
+    print(f'The Answer to Part A is: {tc.green(best_arrangement(puzzle_input))}')
+    puzzle_input['Me'] = dict()
+    print(f'The Answer to Part B is: {tc.green(best_arrangement(puzzle_input))}')
 
 
 if __name__ == '__main__':
