@@ -5,7 +5,7 @@ from collections import defaultdict
 
 
 def load_input(fname):
-    prefs = defaultdict(dict)  # People -> Person[Neighbour]: Happiness
+    prefs = defaultdict(lambda:defaultdict(int))  # People -> Person[Neighbour]: Happiness
     multiplier = {'gain': 1, 'lose': -1}
     with open(fname, 'r') as f:
         for line in f:
@@ -19,7 +19,7 @@ def score(arrangement, prefs):
     for i, person in enumerate(arrangement):
         left_neighbour = arrangement[i-1]
         right_neighbour = arrangement[(i+1) % len(arrangement)]
-        out += prefs[person].get(left_neighbour, 0) + prefs[person].get(right_neighbour, 0)
+        out += prefs[person][left_neighbour] + prefs[person][right_neighbour]
 
     return out
 
@@ -33,7 +33,7 @@ def best_arrangement(prefs):
 def main(fname):
     puzzle_input = load_input(fname)
     print(f'The Answer to Part A is: {tc.green(best_arrangement(puzzle_input))}')
-    puzzle_input['Me'] = dict()
+    puzzle_input['Me'] = defaultdict(int)
     print(f'The Answer to Part B is: {tc.green(best_arrangement(puzzle_input))}')
 
 
