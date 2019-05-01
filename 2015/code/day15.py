@@ -1,8 +1,8 @@
 import sys
 import termcolor_util as tc
-from collections import namedtuple
 from operator import mul
 from functools import reduce
+import itertools
 
 
 def load_input(fname):
@@ -21,9 +21,17 @@ def score_recipe(recipe, ingredients, metrics):
     return reduce(mul, values)
 
 
+def brute_force(ingredients, metrics, total_qty=100):
+    names = ingredients.keys()
+    for qtys in itertools.product(range(total_qty + 1), repeat=len(names)):
+        if sum(qtys) == 100:
+            recipe = dict(zip(names, qtys))
+            yield recipe, score_recipe(recipe, ingredients, metrics)
+
+
 def part_a(ingredients, metrics):
     metrics.remove('calories')
-    return score_recipe({'Butterscotch': 44, 'Cinnamon': 56}, ingredients, metrics)
+    return max(brute_force(ingredients, metrics), key=lambda pair: pair[1])
 
 
 def part_b(puzzle_input, metrics):
