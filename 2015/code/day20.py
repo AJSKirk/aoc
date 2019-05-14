@@ -4,10 +4,7 @@ from itertools import *
 import primefactors
 from functools import reduce
 from operator import mul
-
-
-def score_house_manual(n):
-    return sum(10 * i for i in range(1, n // 2 + 1) if n % i == 0) + 10 * n
+import math
 
 
 def star_mul(xs):
@@ -21,18 +18,19 @@ def powerset(iterable):
     return chain.from_iterable(combinations(s, r) for r in range(len(s) + 1))
 
 
-def score_house(n):
+def get_factors(n, tire_out=math.inf):
     primes = primefactors.factorize(n)
     factors = set(star_mul(combo) for combo in powerset(primes))
-    return sum(10 * i for i in factors) + 10
+    factors.add(1)
+    return set(i for i in factors if n <= i * tire_out)
 
 
 def part_a(puzzle_input):
-    return next(n for n in count(1) if score_house(n) >= puzzle_input)
+    return next(n for n in count(1) if sum(10 * i for i in get_factors(n)) >= puzzle_input)
 
 
 def part_b(puzzle_input):
-    pass
+    return next(n for n in count(1) if sum(11 * i for i in get_factors(n, 50)) >= puzzle_input)
 
 
 def main(score_thresh):
