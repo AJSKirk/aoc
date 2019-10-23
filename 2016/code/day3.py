@@ -9,6 +9,12 @@ def load_input(fname):
 
 
 def valid_triangle(sides):
+    """
+    >>> valid_triangle([5, 10, 25])
+    False
+    >>> valid_triangle([3, 4, 5])
+    True
+    """
     def valid_combo(combo):
         return combo[0] + combo[1] - combo[2] > 0
 
