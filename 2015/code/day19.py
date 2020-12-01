@@ -1,8 +1,9 @@
 import sys
 import termcolor_util as tc
-from collections import namedtuple, deque
+from collections import namedtuple, deque, defaultdict
 import re
 import math
+from difflib import SequenceMatcher
 
 
 Operation = namedtuple('Operation', ['frm', 'to'])
@@ -69,9 +70,38 @@ def BFS(operations, target_molecule, source='e'):
                 queue.append(neighbour)
                 dists[neighbour] = dists[cand] + 1
 
+def a_star(operations, target_molecule, start_molecule='e'):
+    def heuristic(cand):
+        return SequenceMatcher(None, cand, target_molecule).ratio()
+
+    closed_set = set()
+    open_set = set(start_molecule)
+
+    gscore = defaultdict(lambda: math.inf)
+    gscore[start_molecule] = 0
+
+    fscore = defaultdict(lambda: math.inf)
+    fscore[start_molecule] = heuristic(start_molecule)
+
+    while open_set:
+        current = max(open_set, key=lambda cand: fscore[cand])
+        if current == target_molecule:
+            return gscore[current]
+
+        open_set.remove(current)
+        closed_set.add(current)
+
+        for neighbour in possible_steps(operations, current):
+            if neighbour in closed_set:
+                continue
+
+            open_set.add(neighbour)
+            gscore[neighbour] = min(gscore[neighbour], gscore[current] + 1)
+            fscore[neighbour] = heuristic(neighbour)
+
 
 def part_b(operations, target_molecule):
-    return BFS(operations, target_molecule)
+    return a_star(operations, target_molecule)
 
 
 def main(fname):
