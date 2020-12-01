@@ -19,7 +19,7 @@ int main(int argc, char* argv[]) {
 	int file_length;
 	int* expenses;
 	int next_expense;
-	int i; int n;
+	int i; int j; int n;
 
 	if (argc != 2) {
 		printf("Usage: day1 <input.txt>");
@@ -32,7 +32,24 @@ int main(int argc, char* argv[]) {
 	}
 
 	file_length= get_file_length(fp);
-	printf("File length %i\n", file_length);
+
+	expenses= (int*) malloc(file_length * sizeof(int));
+
+	rewind(fp);
+	i = 0;
+	while (fscanf(fp, "%d/n", &n) > 0) {
+		expenses[i] = n;
+		i++;
+	}
+
+	for (i=0; i < file_length; i++) {
+		for (j=i+1; j < file_length; j++) {
+			if (expenses[i] + expenses[j] == 2020) {
+				printf("The product of the matching entries is: %i\n", expenses[i] * expenses[j]);
+				break;
+			}
+		}
+	} // Should really find a way to break out of this outer loop
 
 	return 0;
 }
