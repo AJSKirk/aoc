@@ -19,6 +19,7 @@ class Player:
         target.hp -= max(1, self.damage - target.armour)
         return target.hp <= 0
 
+<<<<<<< HEAD
     def magic_missile(self, target):
         self.mana -= 53
         target.hp -= 4
@@ -56,10 +57,16 @@ def fight(you, enemy, counters, spent):
 
 def try_fight(loadout, enemy):
     you = Player(50, mana=500)
-    poison_counter =
+
     while True:
         if you.hit(enemy): return True
         if enemy.hit(you): return False
+
+
+def brute_force(enemy, fair=True):
+    for loadout in generate_loadouts():
+        if try_fight(loadout, copy(enemy)) == fair:
+            yield loadout.cost
 
 
 def load_input(fname):
