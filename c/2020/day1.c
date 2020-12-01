@@ -19,7 +19,7 @@ int main(int argc, char* argv[]) {
 	int file_length;
 	int* expenses;
 	int next_expense;
-	int i; int j; int n;
+	int i; int j; int k; int n;
 
 	if (argc != 2) {
 		printf("Usage: day1 <input.txt>");
@@ -51,6 +51,19 @@ int main(int argc, char* argv[]) {
 		}
 	} // Should really find a way to break out of this outer loop
 
+	for (i=0; i < file_length; i++) {
+		for (j=i+1; j < file_length; j++) {
+			if (expenses[i] + expenses[j] >= 2020) {
+				continue; // All expenses positive so now impossible to reach 2020 with a third
+			}
+			for (k=j+1; k < file_length; k++) { // I miss itertools
+				if (expenses[i] + expenses[j] + expenses[k] == 2020) {
+					printf("The product of the matching entries is: %i\n", expenses[i] * expenses[j] * expenses[k]);
+					break;
+				}
+			}
+		}
+	}
 	return 0;
 }
 
