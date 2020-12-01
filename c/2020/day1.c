@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <time.h>
 
 int get_file_length(FILE *fp) {
 	int len = 0;
@@ -44,11 +45,17 @@ int twosum(int* arr, int len, int target) {
 }
 
 int threesum(int* arr, int len, int target) {
-	int i, subres;
+	int lhs, rhs = len, subres, boundsum;
 
-	for (i=0; i<len; i++) {
-		subres = twosum(&arr[i+1], len - i - 1, target - arr[i]);
-		if (subres > 0) return subres * arr[i];
+	while (lhs < rhs) {
+		boundsum = arr[lhs] + arr[rhs];
+		if (boundsum >= target) {
+			rhs--;
+		}
+		else {
+			subres = twosum(&arr[lhs + 1], rhs - lhs - 1, target - arr[lhs]);
+			if (subres > 0) return arr[lhs] * subres;
+		}
 	}
 	return -1;
 }
@@ -58,8 +65,9 @@ int main(int argc, char* argv[]) {
 	FILE *fp;
 	int file_length;
 	int* expenses;
-	int next_expense;
-	int i; int j; int k;
+	clock_t start;
+
+	start = clock();
 
 	if (argc != 3) {
 		printf("Usage: day1 <input.txt> <target_sum>");
@@ -82,6 +90,7 @@ int main(int argc, char* argv[]) {
 
 	printf("The product of the matching entries is: %i\n", twosum(expenses, file_length, atoi(argv[2])));
 	printf("The product of the matching entries is: %i\n", threesum(expenses, file_length, atoi(argv[2])));
+	printf("\nTotal runtime: %f ms\n", 1000 * (double) (clock() - start) / CLOCKS_PER_SEC);
 
 	free(expenses);
 	return 0;
