@@ -64,6 +64,7 @@ int main(int argc, char* argv[]) {
 			}
 		}
 	}
+	free(expenses);
 	return 0;
 }
 
