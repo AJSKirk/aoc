@@ -8,10 +8,8 @@ int new_valid(char* passwd, char target, int* positions, int num_pos);
 int main(int argc, char* argv[]) {
 	FILE* fp;
 	int min, max, valid = 0, valid2 = 0;
-	char target;
-	char passwd[50];
+	char target, passwd[50];
 	int positions[2];
-
 	clock_t start = clock();
 
 	if (argc != 2) {
@@ -25,6 +23,10 @@ int main(int argc, char* argv[]) {
 		exit(EXIT_FAILURE);
 	}
 
+	/* Iterate over file and check each password against each validity test
+	 * Could check on the fly without putting password in memory, but we're getting
+	 * L1 caching anyway so speedup not worth the misery
+	 */
 	while (fscanf(fp, "%d-%d %c: %s\n", &min, &max, &target, passwd) > 0) {
 		valid += is_valid(passwd, target, min, max);
 		positions[0] = min; positions[1] = max;
@@ -53,9 +55,7 @@ int new_valid(char* passwd, char target, int* positions, int num_pos) {
 	int i, count = 0;
 
 	for (i=0; i<num_pos; i++) {
-		if (passwd[positions[i] - 1] == target) {
-			count++;
-		}
+		if (passwd[positions[i] - 1] == target) count++;
 		if (count > 1) return 0;
 	}
 	
