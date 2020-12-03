@@ -1,48 +1,29 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <time.h>
 
 
 int main(int argc, char* argv[]) {
-	FILE* fp;
 	char row[50];
-	int colnum = 0, width = 0;
-	int slopes[5] = {1, 3, 5, 7, 1}, sloperows[5] = {1, 1, 1, 1, 2};
+	int colnum = 0, width = 0, nslopes = 5;
+	int delta_cols[5] = {1, 3, 5, 7, 1}, delta_rows[5] = {1, 1, 1, 1, 2};
 	int cols[5] = {0, 0, 0, 0, 0}, trees[5] = {0, 0, 0, 0, 0};
 	int rownum = 0, i;
-    long trees_multiplied = 1; // Having this as an int really messed me up at first!
+	long trees_multiplied = 1; // Having this as an int really messed me up at first!
 
-	clock_t start = clock();
-
-	if (argc != 2) {
-		printf("Usage: day3 <password_file>");
-		exit(EXIT_FAILURE);
-	}
-
-	fp = fopen(argv[1], "r");
-	if (fp == NULL) {
-		printf("Unable to open file %s\n", argv[1]);
-		exit(EXIT_FAILURE);
-	}
-
-	fscanf(fp, "%49s\n", row);
-	width = (int) strnlen(row, 50);
-	rewind(fp);
-
-	while (fscanf(fp, "%49s\n", row) > 0) {
-		for (i=0; i<5; i++) {
-			if (rownum % sloperows[i] == 0) {
+	while (scanf("%49s\n", row) > 0) {
+		if (width == 0) width = (int) strnlen(row, 50);
+		for (i=0; i<nslopes; i++) {
+			if (rownum % delta_rows[i] == 0) {
 				if (row[cols[i] % width] == '#') trees[i] += 1;
-				cols[i] += slopes[i];
+				cols[i] += delta_cols[i];
 			}
 		}
 		rownum++;
 	}
 
-	for (i=0; i<5; i++) trees_multiplied *= trees[i];
+	for (i=0; i<nslopes; i++) trees_multiplied *= trees[i];
 
 	printf("Trees Encountered: %d\n", trees[1]);
 	printf("Multiplied Trees Encountered: %ld\n", trees_multiplied);
-	printf("\nTotal runtime: %f ms\n", 1000 * (double) (clock() - start) / CLOCKS_PER_SEC);
 }
