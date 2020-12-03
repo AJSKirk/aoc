@@ -6,20 +6,13 @@ int is_valid(char* passwd, char target, int min, int max);
 int new_valid(char* passwd, char target, int* positions, int num_pos);
 
 int main(int argc, char* argv[]) {
-	FILE* fp;
 	int min, max, valid = 0, valid2 = 0;
 	char target, passwd[50];
 	int positions[2];
 	clock_t start = clock();
 
-	if (argc != 2) {
-		printf("Usage: day2 <password_file>");
-		exit(EXIT_FAILURE);
-	}
-
-	fp = fopen(argv[1], "r");
-	if (fp == NULL) {
-		printf("Unable to open file %s\n", argv[1]);
+	if (argc != 1) {
+		printf("Usage: day2 < <password_file>\n");
 		exit(EXIT_FAILURE);
 	}
 
@@ -27,7 +20,7 @@ int main(int argc, char* argv[]) {
 	 * Could check on the fly without putting password in memory, but we're getting
 	 * L1 caching anyway so speedup not worth the misery
 	 */
-	while (fscanf(fp, "%d-%d %c: %s\n", &min, &max, &target, passwd) > 0) {
+	while (scanf("%d-%d %c: %s\n", &min, &max, &target, passwd) > 0) {
 		valid += is_valid(passwd, target, min, max);
 		positions[0] = min; positions[1] = max;
 		valid2 += new_valid(passwd, target, positions, 2);
@@ -58,8 +51,6 @@ int new_valid(char* passwd, char target, int* positions, int num_pos) {
 		if (passwd[positions[i] - 1] == target) count++;
 		if (count > 1) return 0;
 	}
-	
-	if (count == 1) return 1;
-	else return 0;
+	return count; // This is a valid test - 1->1 and 0->0
 }
 
