@@ -8,7 +8,7 @@ int main(int argc, char* argv[]) {
 	FILE* fp;
 	char row[50];
 	int colnum = 0, width = 0;
-	int slopes[5] = {1, 3, 5, 7, 1};
+	int slopes[5] = {1, 3, 5, 7, 1}, sloperows[5] = {1, 1, 1, 1, 2};
 	int cols[5] = {0, 0, 0, 0, 0}, trees[5] = {0, 0, 0, 0, 0};
 	int rownum = 0, i;
     long trees_multiplied = 1; // Having this as an int really messed me up at first!
@@ -16,7 +16,7 @@ int main(int argc, char* argv[]) {
 	clock_t start = clock();
 
 	if (argc != 2) {
-		printf("Usage: day2 <password_file>");
+		printf("Usage: day3 <password_file>");
 		exit(EXIT_FAILURE);
 	}
 
@@ -31,20 +31,16 @@ int main(int argc, char* argv[]) {
 	rewind(fp);
 
 	while (fscanf(fp, "%49s\n", row) > 0) {
-		for (i=0; i<4; i++) {
-			if (row[cols[i] % width] == '#') trees[i] += 1;
-			cols[i] += slopes[i];
-		}
-		
-		if (rownum % 2 == 0) {
-			if (row[cols[4] % width] == '#') trees[4]++;
-			cols[4] += slopes[4];
+		for (i=0; i<5; i++) {
+			if (rownum % sloperows[i] == 0) {
+				if (row[cols[i] % width] == '#') trees[i] += 1;
+				cols[i] += slopes[i];
+			}
 		}
 		rownum++;
 	}
 
 	for (i=0; i<5; i++) trees_multiplied *= trees[i];
-	for (i=0; i<5; i++) printf("%d\n", trees[i]);
 
 	printf("Trees Encountered: %d\n", trees[1]);
 	printf("Multiplied Trees Encountered: %ld\n", trees_multiplied);
