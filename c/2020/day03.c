@@ -1,8 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <time.h>
 
-int get_width(char* row);
 
 int main(int argc, char* argv[]) {
 	FILE* fp;
@@ -27,7 +27,7 @@ int main(int argc, char* argv[]) {
 	}
 
 	fscanf(fp, "%49s\n", row);
-	width = get_width(row);
+	width = (int) strnlen(row, 50);
 	rewind(fp);
 
 	while (fscanf(fp, "%49s\n", row) > 0) {
@@ -45,10 +45,4 @@ int main(int argc, char* argv[]) {
 	printf("Trees Encountered: %d\n", trees[1]);
 	printf("Multiplied Trees Encountered: %ld\n", trees_multiplied);
 	printf("\nTotal runtime: %f ms\n", 1000 * (double) (clock() - start) / CLOCKS_PER_SEC);
-}
-
-int get_width(char* row) {
-	int i = 0;
-	while (row[i] != '\0') i++;
-	return i;
 }
