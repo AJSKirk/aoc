@@ -35,6 +35,9 @@ int check_passport(char * passport) {
 	int valid_fields[7] = {0, 0, 0, 0, 0, 0, 0};
 	int num_fields = 7, i;
 	char *pair, *field, *context = passport;
+
+	pair = (char *) malloc(64 * sizeof(char));
+	field = (char *) malloc(64 * sizeof(char));
 	
 	pair = strtok_r(context, " ", &context);
 	do {
@@ -55,6 +58,15 @@ int check_passport_strict(char* passport) {
 	char *pair, *field, *value, *context = passport;
 	int valid_fields[7] = {0, 0, 0, 0, 0, 0, 0};
 	int i, num_fields = 7, len, hgt, year;
+	const char *valid_eyes[7];
+	int num_eyes = 7;
+
+	pair = (char *) malloc(64 * sizeof(char));
+	field = (char *) malloc(64 * sizeof(char));
+	value = (char *) malloc(64 * sizeof(char));
+
+	valid_eyes[0] = "amb"; valid_eyes[1] = "blu"; valid_eyes[2] = "brn"; valid_eyes[3] = "gry";
+	valid_eyes[4] = "grn"; valid_eyes[5] = "hzl"; valid_eyes[6] = "oth";
 
 	pair = strtok_r(context, " ", &context);
 	do {
@@ -88,21 +100,13 @@ int check_passport_strict(char* passport) {
 			}
 			valid_fields[4] = 1;
 		} else if (strcmp(field, "ecl") == 0) {
-			if (strcmp(value, "amb") == 0) {
-				valid_fields[5] += 1;
-			} else if (strcmp(value, "blu") == 0) {
-				valid_fields[5] += 1;
-			} else if (strcmp(value, "brn") == 0) {
-				valid_fields[5] += 1;
-			} else if (strcmp(value, "gry") == 0) {
-				valid_fields[5] += 1;
-			} else if (strcmp(value, "grn") == 0) {
-				valid_fields[5] += 1;
-			} else if (strcmp(value, "hzl") == 0) {
-				valid_fields[5] += 1;
-			} else if (strcmp(value, "oth") == 0) {
-				valid_fields[5] += 1;
-			} else return 0;
+			for (i=0; i<num_eyes; i++) {
+				if (strcmp(value, valid_eyes[i]) == 0) {
+					valid_fields[5] += 1;
+					break;
+				}
+			}
+			if (valid_fields[5] == 0) return 0;
 		} else if (strcmp(field, "pid") == 0) {
 			if (strnlen(value, 10) != 9) return 0;
 			for (i=0; i<9; i++) {
