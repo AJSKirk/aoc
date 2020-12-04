@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <regex.h>
 #include <ctype.h>
 
 int check_passport(char * passport);
@@ -15,7 +16,7 @@ int main(int argc, char* argv[]) {
 		next_row = fgets(row, 255, stdin);
 		if (next_row == NULL || *row == '\n') {
 			p_cursor = 0;
-			valid += check_passport_strict(passport);
+			valid += check_passport(passport);
 		} else {
 			len = strnlen(row, 255);
 			row[len -  1] = ' '; // Hacky but it works to drop the newline
@@ -31,25 +32,16 @@ int main(int argc, char* argv[]) {
 }
 
 int check_passport(char * passport) {
-	char fields[7][10] = {"byr", "iyr", "eyr", "hgt", "hcl", "ecl", "pid"};
-	int valid_fields[7] = {0, 0, 0, 0, 0, 0, 0};
+	const char *fields[7];
+	regex_t pattern;
 	int num_fields = 7, i;
-	char *pair, *field, *context = passport;
 
-	pair = (char *) malloc(64 * sizeof(char));
-	field = (char *) malloc(64 * sizeof(char));
-	
-	pair = strtok_r(context, " ", &context);
-	do {
-		field = strtok(pair, ":");
-		for (i=0; i<num_fields; i++) {
-			if (strcmp(field, fields[i]) == 0) valid_fields[i] = 1;
-		}
-		pair = strtok_r(context, " ", &context);
-	} while (pair != NULL);
+	fields[0] = "byr"; fields[1] = "iyr"; fields[2] = "eyr"; fields[3] = "hgt";
+	fields[4] = "hcl"; fields[5] = "ecl"; fields[6] = "pid";
 
 	for (i=0; i<num_fields; i++) {
-		if (valid_fields[i] == 0) return 0;
+		regcomp(&pattern, fields[i], REG_EXTENDED);
+		if (regexec(&pattern, passport, 0, NULL, 0) != 0) return 0;
 	}
 	return 1;
 }
