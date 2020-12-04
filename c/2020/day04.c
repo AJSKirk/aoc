@@ -2,21 +2,21 @@
 #include <stdlib.h>
 #include <string.h>
 #include <regex.h>
-#include <ctype.h>
 
 int check_passport(char * passport);
 int check_passport_strict(char * passport);
 
 int main(int argc, char* argv[]) {
 	char passport[1024], row[256];
-	int valid = 0, p_cursor = 0, len = 0;
-	char *next_row;
+	int valid = 0, valid_strict = 0, p_cursor = 0, len = 0;
+char *next_row;
 
 	while (1) {
 		next_row = fgets(row, 255, stdin);
 		if (next_row == NULL || *row == '\n') {
 			p_cursor = 0;
 			valid += check_passport(passport);
+			valid_strict += check_passport_strict(passport);
 		} else {
 			len = strnlen(row, 255);
 			row[len -  1] = ' '; // Hacky but it works to drop the newline
@@ -27,8 +27,8 @@ int main(int argc, char* argv[]) {
 		if (next_row == NULL) break;
 	}
 
-	printf("%d\n", valid);
-	// printf("Multiplied Trees Encountered: %ld\n", trees_multiplied);
+	printf("Valid Documents: %d\n", valid);
+	printf("Strict Valid Documents: %d\n", valid_strict);
 }
 
 int check_passport(char * passport) {
@@ -41,79 +41,36 @@ int check_passport(char * passport) {
 
 	for (i=0; i<num_fields; i++) {
 		regcomp(&pattern, fields[i], REG_EXTENDED);
-		if (regexec(&pattern, passport, 0, NULL, 0) != 0) return 0;
+		if (regexec(&pattern, passport, 0, NULL, 0) != 0) {
+			regfree(&pattern);
+			return 0;
+		}
+		regfree(&pattern);
 	}
 	return 1;
 }
 
 int check_passport_strict(char* passport) {
-	char *pair, *field, *value, *context = passport;
-	int valid_fields[7] = {0, 0, 0, 0, 0, 0, 0};
-	int i, num_fields = 7, len, hgt, year;
-	const char *valid_eyes[7];
-	int num_eyes = 7;
-
-	pair = (char *) malloc(64 * sizeof(char));
-	field = (char *) malloc(64 * sizeof(char));
-	value = (char *) malloc(64 * sizeof(char));
-
-	valid_eyes[0] = "amb"; valid_eyes[1] = "blu"; valid_eyes[2] = "brn"; valid_eyes[3] = "gry";
-	valid_eyes[4] = "grn"; valid_eyes[5] = "hzl"; valid_eyes[6] = "oth";
-
-	pair = strtok_r(context, " ", &context);
-	do {
-		field = strtok(pair, ":");
-		value = strtok(NULL, " ");
-		if (strcmp(field, "byr") == 0) {
-			year = atoi(value);
-			if (year < 1920 || year > 2002 || strnlen(value, 32) != 4) return 0;
-			valid_fields[0] = 1;
-		} else if (strcmp(field, "iyr") == 0) {
-			year = atoi(value);
-			if (year < 2010 || year > 2020 || strnlen(value, 32) != 4) return 0;
-			valid_fields[1] = 1;
-		} else if (strcmp(field, "eyr") == 0) {
-			year = atoi(value);
-			if (year < 2020 || year > 2030 || strnlen(value, 32) != 4) return 0;
-			valid_fields[2] = 1;
-		} else if (strcmp(field, "hgt") == 0) {
-			hgt = atoi(value);
-			len = strnlen(value, 32);
-			if (strcmp(&value[len - 2], "cm") == 0) {
-				if (hgt < 150 || hgt > 193) return 0;
-			} else if (strcmp(&value[len - 2], "in") == 0) {
-				if (hgt < 59 || hgt > 76) return 0;
-			} else return 0;
-			valid_fields[3] = 1;
-		} else if (strcmp(field, "hcl") == 0) {
-			if (*value != '#' || strnlen(value, 32) != 7) return 0;
-			for (i=1;i<7;i++) {
-				if (isalnum(value[i]) == 0) return 0;
-			}
-			valid_fields[4] = 1;
-		} else if (strcmp(field, "ecl") == 0) {
-			for (i=0; i<num_eyes; i++) {
-				if (strcmp(value, valid_eyes[i]) == 0) {
-					valid_fields[5] += 1;
-					break;
-				}
-			}
-			if (valid_fields[5] == 0) return 0;
-		} else if (strcmp(field, "pid") == 0) {
-			if (strnlen(value, 10) != 9) return 0;
-			for (i=0; i<9; i++) {
-				if (isdigit(value[i]) == 0) return 0;
-			}
-			valid_fields[6] = 1;
-		}
-
-		pair = strtok_r(context, " ", &context);
-	} while (pair != NULL);
+	const char *fields[7];
+	regex_t pattern;
+	int num_fields = 7, i;
+	
+	fields[0] = "byr:(19([2-9][0-9])|200(0|1|2)) ";
+	fields[1] = "iyr:(20(1[0-9]|20)) ";
+	fields[2] = "eyr:(20(2[0-9]|30)) ";
+	fields[3] = "hgt:(1([5-8][0-9]|9[0-3])cm|(59|6[0-9]|7[0-6])in) ";
+	fields[4] = "hcl:#[a-f0-9]{6} ";
+	fields[5] = "ecl:(amb|blu|brn|gry|grn|hzl|oth) ";
+	fields[6] = "pid:[0-9]{9} ";
 
 	for (i=0; i<num_fields; i++) {
-		if (valid_fields[i] == 0) return 0;
+		regcomp(&pattern, fields[i], REG_EXTENDED);
+		if (regexec(&pattern, passport, 0, NULL, 0) != 0) {
+			regfree(&pattern);
+			return 0;
+		}
+		regfree(&pattern);
 	}
-	return 1;
 	return 1;
 }
 
