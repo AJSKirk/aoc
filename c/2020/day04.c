@@ -5,7 +5,7 @@
 int check_passport(char * passport);
 
 int main(int argc, char* argv[]) {
-	char passport[256], row[64];
+	char passport[1024], row[256];
 	int valid = 0, p_cursor = 0;
 	char *next_row;
 
@@ -15,7 +15,7 @@ int main(int argc, char* argv[]) {
 			p_cursor = 0;
 			valid += check_passport(passport);
 		} else {
-			passport[p_cursor - 1] = ' ';
+			passport[p_cursor - 1] = ' '; // Hacky but it works
 			strncpy(&passport[p_cursor], row, 255 - p_cursor); 
 			p_cursor += strnlen(row, 255);
 		}
