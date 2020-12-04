@@ -8,7 +8,7 @@ int check_passport_strict(char * passport);
 
 int main(int argc, char* argv[]) {
 	char passport[1024], row[256];
-	int valid = 0, p_cursor = 0;
+	int valid = 0, p_cursor = 0, len = 0;
 	char *next_row;
 
 	while (1) {
@@ -17,7 +17,8 @@ int main(int argc, char* argv[]) {
 			p_cursor = 0;
 			valid += check_passport_strict(passport);
 		} else {
-			passport[p_cursor - 1] = ' '; // Hacky but it works
+			len = strnlen(row, 255);
+			row[len -  1] = ' '; // Hacky but it works to drop the newline
 			strncpy(&passport[p_cursor], row, 255 - p_cursor); 
 			p_cursor += strnlen(row, 255);
 		}
@@ -74,7 +75,8 @@ int check_passport_strict(char* passport) {
 		} else if (strcmp(field, "hgt") == 0) {
 			hgt = atoi(value);
 			len = strnlen(value, 32);
-			if (strcmp(&value[len - 2], "cm") == 0) return 0;
+			if (strcmp(&value[len - 2], "cm") == 0) {
+				if (hgt < 150 || hgt > 193) return 0;
 			} else if (strcmp(&value[len - 2], "in") == 0) {
 				if (hgt < 59 || hgt > 76) return 0;
 			} else return 0;
@@ -88,7 +90,7 @@ int check_passport_strict(char* passport) {
 		} else if (strcmp(field, "ecl") == 0) {
 			if (strcmp(value, "amb") == 0) {
 				valid_fields[5] += 1;
-			} else if (strcmp(value, "bluu") == 0) {
+			} else if (strcmp(value, "blu") == 0) {
 				valid_fields[5] += 1;
 			} else if (strcmp(value, "brn") == 0) {
 				valid_fields[5] += 1;
