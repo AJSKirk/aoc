@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 #include <math.h>
+#include <stdbool.h>
 
 #define NUM_SEATS 1024 // 128 * 8
 
@@ -10,19 +10,19 @@ int find_element(char* pass, int len);
 int main(int argc, char* argv[]) {
 	char rowstring[8], colstring[4];
 	int row, col, id,  largest_id = 0;
-	int seats[NUM_SEATS] = {0};
+	bool seats[NUM_SEATS] = {false};
 	int i;
 
 	while (scanf("%7s%3s\n", rowstring, colstring) > 0) {
 		row = find_element(rowstring, 7);
 		col = find_element(colstring, 3);
 		id = row * 8 + col;
-		seats[id] = 1;
+		seats[id] = true;
 		if (id > largest_id) largest_id = id;
 	}
 
 	for (i=1; i<NUM_SEATS; i++) {
-		if (seats[i] == 0 && seats[i-1] == 1 && seats[i+1] == 1) break;
+		if (seats[i] == false && seats[i-1] && seats[i+1]) break;
 	}
 
 	printf("The largest Ticket ID is: %d\n", largest_id);
