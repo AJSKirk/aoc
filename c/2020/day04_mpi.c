@@ -11,8 +11,9 @@ int check_passport(char * passport);
 int check_passport_strict(char * passport);
 
 int main(int argc, char* argv[]) {
-	char big_passports[MAX_PASSPORTS * PASSPORT_BUFFER], row[256];
+	//char big_passports[MAX_PASSPORTS * PASSPORT_BUFFER], row[256];
 	//char *passports;
+	char *big_passports, *passports, row[256];
 	int num_passports = 0;
 	int valid = 0, valid_strict = 0, p_cursor = 0, len = 0;
 	int global_valid, global_valid_strict;
@@ -24,14 +25,10 @@ int main(int argc, char* argv[]) {
 	MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 	MPI_Comm_size(MPI_COMM_WORLD, &size);
 
-	//passports = (char *) malloc((MAX_PASSPORTS * PASSPORT_BUFFER / size) * sizeof(char));
-	char passports[MAX_PASSPORTS * PASSPORT_BUFFER / size];
-
-	//big_passports = (char *) malloc(MAX_PASSPORTS * PASSPORT_BUFFER * sizeof(char));
-	//row = (char *) malloc(256 * sizeof(char));
 
 	if (rank == 0) {
 		printf("Running on %d processes\n", size);
+		big_passports = (char *) malloc(MAX_PASSPORTS * PASSPORT_BUFFER * sizeof(char));
 		while (1) {
 			next_row = fgets(row, 255, stdin);
 			if (next_row == NULL || *row == '\n') {
@@ -45,21 +42,22 @@ int main(int argc, char* argv[]) {
 			}
 			if (next_row == NULL) break;
 		}
+		num_passports = ((num_passports / size) + 1) * size;
 	}
 
-	//num_passports = ((num_passports / size) + 1) * size;
-	num_passports = MAX_PASSPORTS;
-
+	MPI_Bcast(&num_passports, 1, MPI_INT, 0, MPI_COMM_WORLD);
+	passports = (char *) malloc(num_passports * PASSPORT_BUFFER * sizeof(char));
 
 	MPI_Scatter(big_passports, num_passports * PASSPORT_BUFFER / size, MPI_CHAR,
 			passports, num_passports * PASSPORT_BUFFER / size, MPI_CHAR, 0, MPI_COMM_WORLD);
 
-	//if (rank == 0) free(big_passports);
+	if (rank == 0) free(big_passports);
 
 	for (int i=0; i< num_passports / size; i++) {
 		valid += check_passport(&passports[i * PASSPORT_BUFFER]);
 		valid_strict += check_passport_strict(&passports[i * PASSPORT_BUFFER]);
 	}
+	free(passports);
 
 	MPI_Reduce(&valid, &global_valid, 1, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
 	MPI_Reduce(&valid_strict, &global_valid_strict, 1, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
