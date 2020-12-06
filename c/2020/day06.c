@@ -10,11 +10,11 @@ set_t populate_set(const char *person);
 unsigned int get_cardinality(set_t set);
 
 int main(int argc, char* argv[]) {
-	char group[256], person[32];
-	int p_cursor = 0, len = 0;
+	char person[32];
+	int p_cursor = 0;
 	char *next_person;
-	int total = 0, members = 0, total_strict = 0;
-	set_t union_set = 0, intersection_set = 0, questions;
+	int total = 0, total_strict = 0;
+	set_t union_set = 0, intersection_set = ~0, questions;
 
 	while (1) {
 		next_person = fgets(person, 32, stdin);
