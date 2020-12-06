@@ -10,9 +10,7 @@ set_t populate_set(const char *person);
 unsigned int get_cardinality(set_t set);
 
 int main(int argc, char* argv[]) {
-	char person[32];
-	int p_cursor = 0;
-	char *next_person;
+	char person[32], *next_person;
 	int total = 0, total_strict = 0;
 	set_t union_set = 0, intersection_set = ~0, questions;
 
@@ -49,13 +47,11 @@ set_t populate_set(const char *person) {
 		questions |= (1U << val_char);  // Sets val_charth bit of questions to 1
 		i++;
 	}
-
 	return questions;
 }
 
 unsigned int get_cardinality(set_t set) {
 	int i, card = 0;
-
 	for (i=0; i<8*sizeof(set_t); i++) { // Remember sizeof is bytes, not bits
 		card += 1U & (set >> i);
 	}
