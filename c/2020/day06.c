@@ -21,7 +21,6 @@ int main(int argc, char* argv[]) {
 		if (next_person == NULL || *person == '\n') {
 			total += get_cardinality(union_set);
 			total_strict += get_cardinality(intersection_set);
-			printf("%d\n", get_cardinality(intersection_set));
 			union_set = 0;
 			intersection_set = ~0;
 		} else {
