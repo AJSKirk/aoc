@@ -3,7 +3,6 @@
 My answers to the Advent of Code annual challenges, in a few different languages. A few notes:
 
 ### C
-
 Covers 2020. Some C problems have multiple implementations, following the following schema:
 
 1. `dayNN.c` files just use stdlib C99
