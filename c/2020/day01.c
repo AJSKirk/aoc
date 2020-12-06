@@ -1,32 +1,30 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <time.h>
 
-int get_file_length(FILE *fp) {
+#define GLOBAL_TARGET 2020
+#define BUFFER_LENGTH 1024
+
+int compar(const void *a, const void *b);
+int twosum(int *arr, int len, int target);
+int threesum(int *arr, int len, int target);
+
+int main(int argc, char* argv[]) {
+	int expenses[BUFFER_LENGTH];
 	int len = 0;
-	char next_char;
 
-	while (!feof(fp)) {
-		next_char = fgetc(fp);
-		if (next_char == '\n') {
-			len++;
-		}
+	while (scanf("%d", &expenses[len]) > 0) {
+		len++;
 	}
-	return len;
+
+	qsort(expenses, len, sizeof(int), compar);
+
+	printf("The product of the matching entries is: %i\n", twosum(expenses, len, GLOBAL_TARGET));
+	printf("The product of the matching entries is: %i\n", threesum(expenses, len, GLOBAL_TARGET));
+
+	return 0;
 }
 
-void file_to_arr(FILE* fp, int* arr) {
-	int i, n;
-
-	i = 0;
-	while (fscanf(fp, "%d/n", &n) > 0) {
-		arr[i] = n;
-		i++;
-	}
-	return;
-}
-
-int compar(const void* a, const void *b) {
+int compar(const void *a, const void *b) {
 	const int a_val = *(int*) a, b_val = *(int*) b;
 	return (a_val > b_val) - (a_val < b_val);
 }
@@ -45,7 +43,7 @@ int twosum(int* arr, int len, int target) {
 }
 
 int threesum(int* arr, int len, int target) {
-	int lhs, rhs = len, subres, boundsum;
+	int lhs = 0, rhs = len, subres, boundsum;
 
 	while (lhs < rhs) {
 		boundsum = arr[lhs] + arr[rhs];
@@ -59,41 +57,3 @@ int threesum(int* arr, int len, int target) {
 	}
 	return -1;
 }
-
-
-int main(int argc, char* argv[]) {
-	FILE *fp;
-	int file_length;
-	int* expenses;
-	clock_t start;
-
-	start = clock();
-
-	if (argc != 3) {
-		printf("Usage: day1 <input.txt> <target_sum>");
-	}
-
-	fp = fopen(argv[1], "r");
-	if (fp == NULL) {
-		printf("Unable to open file %s\n", argv[1]);
-		exit(EXIT_FAILURE);
-	}
-
-	file_length = get_file_length(fp);
-
-	expenses = (int*) malloc(file_length * sizeof(int));
-
-	rewind(fp);
-	file_to_arr(fp, expenses);
-
-	qsort(expenses, file_length, sizeof(int), compar);
-
-	printf("The product of the matching entries is: %i\n", twosum(expenses, file_length, atoi(argv[2])));
-	printf("The product of the matching entries is: %i\n", threesum(expenses, file_length, atoi(argv[2])));
-	printf("\nTotal runtime: %f ms\n", 1000 * (double) (clock() - start) / CLOCKS_PER_SEC);
-
-	free(expenses);
-	return 0;
-}
-
-

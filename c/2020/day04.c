@@ -11,7 +11,7 @@ int main(int argc, char* argv[]) {
 	int valid = 0, valid_strict = 0, p_cursor = 0, len = 0;
 char *next_row;
 
-	while (1) {
+	do {
 		next_row = fgets(row, 255, stdin);
 		if (next_row == NULL || *row == '\n') {
 			p_cursor = 0;
@@ -24,8 +24,7 @@ char *next_row;
 			p_cursor += strnlen(row, 255);
 		}
 
-		if (next_row == NULL) break;
-	}
+	} while (next_row != NULL);
 
 	printf("Valid Documents: %d\n", valid);
 	printf("Strict Valid Documents: %d\n", valid_strict);

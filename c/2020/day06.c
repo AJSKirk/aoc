@@ -14,7 +14,7 @@ int main(int argc, char* argv[]) {
 	int total = 0, total_strict = 0;
 	set_t union_set = 0, intersection_set = ~0, questions;
 
-	while (1) {
+	do {
 		next_person = fgets(person, 32, stdin);
 		if (next_person == NULL || *person == '\n') {
 			total += get_cardinality(union_set);
@@ -28,8 +28,7 @@ int main(int argc, char* argv[]) {
 			intersection_set &= questions;
 		}
 
-		if (next_person == NULL) break;
-	}
+	} while(next_person != NULL);
 
 	printf("Total Count: %d\n", total);
 	printf("Total Strict Count: %d\n", total_strict);
