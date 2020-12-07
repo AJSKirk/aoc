@@ -31,7 +31,8 @@ unsigned long hash(char *str) {
 }
 
 int hash_index(hash_t *h, void *key, bool *first) {
-	int i = hash(key) % h->size; // Trivially simply hash
+	// Index with 1-forward probing
+	int i = hash(key) % h->size; 
 	while (h->keys[i]) {
 		if (strncmp(h->keys[i], key, KEY_BUFFER) == 0) {
 			*first = false;

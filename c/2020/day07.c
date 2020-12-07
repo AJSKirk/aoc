@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
-#include "assoc_array.h"
+#include "hashtable.h"
 
 #define TARGET_BAG "shinygold"
 #define MAX_BAGS 1024

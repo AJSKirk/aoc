@@ -1,3 +1,4 @@
-*/inputs/*
+*/inputs
 venv/*
 .idea/*
+*.o
