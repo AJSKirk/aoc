@@ -2,11 +2,12 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
-#include <judy.h>
+#include "assoc_array.h"
 
 #define TARGET_BAG "shinygold"
 #define MAX_BAGS 1024
 #define BAG_BUFFER 32
+#define MAX_PARENTS 128
 
 struct child_bag {
 	int num;
@@ -16,21 +17,20 @@ struct child_bag {
 int main(int argc, char* argv[]) {
 	char row[256], *next_row;
 	char *parent_name, *next_child_name, *word;
-	char *target_container = parent_name;
+	char *target_container;
 	struct child_bag next_child;
-	
-	Pvoid_t bags = (Pvoid_t) NULL;
-	PWord_t *value_ptr;
+
+	hash_t *bags = hash_new(MAX_BAGS);
 
 	do {
 		next_row = fgets(row, 256, stdin);
 		parent_name = (char *) calloc(BAG_BUFFER, sizeof(char));
+		target_container = parent_name;
 		for (word=strtok(row, " ,.\n"); word; word=strtok(NULL, " ,.\n")) {
-			//printf("%s\n", word);
-			if (strncmp(word, "contain", 32) == 0 || strncmp(word, "bag", 3) == 0) {
+			if ((strncmp(word, "contain", 7) == 0) || (strncmp(word, "bag", 3) == 0)) {
 				if (strnlen(next_child_name, 3) >= 3) {
-					JLI(value_ptr, bags, *next_child_name);
-					*value_ptr = (PWord_t) parent_name;
+					printf("Trying to insert %s into %s\n", parent_name, next_child_name);
+					hash_insert(bags, next_child_name, parent_name, MAX_PARENTS);
 				}
 				next_child_name = (char *) calloc(BAG_BUFFER, sizeof(char));
 				target_container = next_child_name;
@@ -39,18 +39,19 @@ int main(int argc, char* argv[]) {
 			}
 			else {
 				strncat(target_container, word, 32);
-				//strncat(target_container, " ", 32);
+				strncat(target_container, " ", 32);
 			}
 		}
 	} while (next_row != NULL);
 
-	/* Test Array Iteration*/
-	uint8_t idx[MAX_BAGS];
-	JSLF(value_ptr, bags, idx);
-	while (value_ptr != NULL) {
-		printf("%s -> %s", idx, (char *) value_ptr);
+	printf("Printing\n");
+	// Print array
+	char **parents = (char **) calloc(MAX_PARENTS, sizeof(char *));
+	int i = 0;
+	parents = hash_lookup(bags, TARGET_BAG);
+	while (parents[i] != '\0') {
+		printf("%s\n", parents[i]);
+		i++;
 	}
-
-	JudySLFreeArray(&bags, PJE0);
 }
 
