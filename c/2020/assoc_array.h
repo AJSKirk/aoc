@@ -8,6 +8,7 @@ typedef struct {
 	void ***values;
 } hash_t;
 
+unsigned long hash(char *str);
 hash_t *hash_new(int size);
 int hash_index(hash_t *h, void *key, bool *first);
 void hash_insert(hash_t *h, void *key, void *val, int allowed_vals);

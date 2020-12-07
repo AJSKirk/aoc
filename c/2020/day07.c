@@ -25,11 +25,11 @@ int main(int argc, char* argv[]) {
 	do {
 		next_row = fgets(row, 256, stdin);
 		parent_name = (char *) calloc(BAG_BUFFER, sizeof(char));
+		next_child_name = (char *) calloc(BAG_BUFFER, sizeof(char));
 		target_container = parent_name;
 		for (word=strtok(row, " ,.\n"); word; word=strtok(NULL, " ,.\n")) {
 			if ((strncmp(word, "contain", 7) == 0) || (strncmp(word, "bag", 3) == 0)) {
 				if (strnlen(next_child_name, 3) >= 3) {
-					printf("Trying to insert %s into %s\n", parent_name, next_child_name);
 					hash_insert(bags, next_child_name, parent_name, MAX_PARENTS);
 				}
 				next_child_name = (char *) calloc(BAG_BUFFER, sizeof(char));
@@ -39,12 +39,10 @@ int main(int argc, char* argv[]) {
 			}
 			else {
 				strncat(target_container, word, 32);
-				strncat(target_container, " ", 32);
 			}
 		}
 	} while (next_row != NULL);
 
-	printf("Printing\n");
 	// Print array
 	char **parents = (char **) calloc(MAX_PARENTS, sizeof(char *));
 	int i = 0;

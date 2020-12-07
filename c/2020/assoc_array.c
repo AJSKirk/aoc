@@ -3,6 +3,8 @@
 #include <string.h>
 #include <stdbool.h>
 
+#define KEY_BUFFER 32
+
 typedef struct {
 	int size;
 	void **keys;
@@ -17,10 +19,21 @@ hash_t *hash_new(int size) {
 	return h;
 }
 
+unsigned long hash(char *str) {
+	// DJB2 Hash function by Dan Bernstein
+	unsigned long hash = 5381;
+	int c;
+
+	while ((c = *str++)) {
+		hash = ((hash << 5) + hash) + c;
+	}
+	return hash;
+}
+
 int hash_index(hash_t *h, void *key, bool *first) {
-	int i = (int) key % h->size; // Trivially simply hash
+	int i = hash(key) % h->size; // Trivially simply hash
 	while (h->keys[i]) {
-		if (h->keys[i] == key) {
+		if (strncmp(h->keys[i], key, KEY_BUFFER) == 0) {
 			*first = false;
 			return i;
 		}
@@ -42,10 +55,12 @@ void hash_insert(hash_t *h, void *key, void *val, int allowed_vals) {
 		}
 		h->values[i][j] = val;
 	}
+	h->keys[i] = key;
 }
 
 void *hash_lookup(hash_t *h, void *key) {
 	bool first;
-	return h->values[hash_index(h, key, &first)];
+	int i = hash_index(h, key, &first);
+	return h->values[i];
 }
 
