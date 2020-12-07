@@ -14,6 +14,9 @@ struct child_bag {
 	char *name;
 };
 
+int count_ancestors(hash_t *bags, char *target, char **seen);
+bool check_seen(char *candidate, char **seen);
+
 int main(int argc, char* argv[]) {
 	char row[256], *next_row;
 	char *parent_name, *next_child_name, *word;
@@ -44,12 +47,35 @@ int main(int argc, char* argv[]) {
 	} while (next_row != NULL);
 
 	// Print array
-	char **parents = (char **) calloc(MAX_PARENTS, sizeof(char *));
 	int i = 0;
-	parents = hash_lookup(bags, TARGET_BAG);
-	while (parents[i] != '\0') {
-		printf("%s\n", parents[i]);
-		i++;
-	}
+	char **seen = (char **) calloc(MAX_BAGS, sizeof(char *));
+	printf("%d\n", count_ancestors(bags, TARGET_BAG, seen));
 }
 
+int count_ancestors(hash_t *bags, char *target, char **seen) {
+	char **parents;
+	int count = 0, i = 0;
+	
+	parents = hash_lookup(bags, target);
+	while (parents[i] != '\0') {
+		if (check_seen(parents[i], seen)) {
+			count += count_ancestors(bags, parents[i], seen);
+			count++;
+		}
+		i++;
+	}
+	//free(parents); // We can free memory as we go
+	return count;
+}
+
+bool check_seen(char *candidate, char **seen) {
+	// Appends to seen and returns 1 if it wasn't there earlier
+	int i=0;
+	while (seen[i] != '\0') {
+		if (strncmp(seen[i], candidate, BAG_BUFFER) == 0) 
+			return false;
+		i++;
+	}
+	seen[i] = candidate;
+	return true;
+}

@@ -37,7 +37,7 @@ int hash_index(hash_t *h, void *key, bool *first) {
 			*first = false;
 			return i;
 		}
-		i = (i + i) % h->size;
+		i = (i + 1) % h->size;
 	}
 	*first = true;
 	return i;
@@ -47,6 +47,7 @@ void hash_insert(hash_t *h, void *key, void *val, int allowed_vals) {
 	bool first;
 	int i = hash_index(h, key, &first), j = 0;
 	if (first) {
+		// Create a new pointer to pointers
 		h->values[i] = (void **) calloc(allowed_vals, sizeof(char *));
 		h->values[i][0] = val;
 	} else {
@@ -61,6 +62,9 @@ void hash_insert(hash_t *h, void *key, void *val, int allowed_vals) {
 void *hash_lookup(hash_t *h, void *key) {
 	bool first;
 	int i = hash_index(h, key, &first);
+	if (first) {
+		h->values[i] = (void **) calloc(1, sizeof(char *));
+	}
 	return h->values[i];
 }
 
