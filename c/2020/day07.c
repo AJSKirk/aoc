@@ -56,10 +56,9 @@ int main(int argc, char* argv[]) {
 		}
 	} while (next_row != NULL);
 
-	// Print array
 	char **seen = (char **) calloc(MAX_BAGS, sizeof(char *));
 	printf("%d\n", count_ancestors(child_idx_bags, TARGET_BAG, seen));
-	//printf("%d\n", count_children(parent_idx_bags, TARGET_BAG));
+	printf("%d\n", count_children(parent_idx_bags, TARGET_BAG));
 }
 
 int count_ancestors(hash_t *bags, char *target, char **seen) {
