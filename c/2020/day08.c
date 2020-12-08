@@ -21,7 +21,6 @@ struct machine {
 unsigned int parse_opcode(char *op_text);
 void execute(struct operation op, struct machine *vm);
 int run_program(struct operation *stack, int terminator, struct machine *vm);
-int brute_force(struct operation *stack, int terminator);
 void switch_ops(struct operation *op);
 void set_bit(unsigned int *arr, int k);
 bool check_bit(unsigned int *arr, int k);
@@ -44,7 +43,6 @@ int main(int argc, char* argv[]) {
 	}
 
 	terminator = i;
-
 
 	run_program(stack, terminator, &vm);
 	printf("Register Value at Failure is: %d\n", vm.accumulator);
@@ -81,8 +79,6 @@ void execute(struct operation op, struct machine *vm) {
 int run_program(struct operation *stack, const int terminator, struct machine *vm) {
 	// Returns final acc if program terminates, -1 if loops
 	unsigned int seen[PROGRAM_BUFFER / (sizeof(int) * 8)] = {0U};
-	
-	//vm = calloc(1, sizeof(struct machine));  // Set PC and accumulator to zero
 
 	memset(vm, 0, sizeof(struct machine)); // Zero registers
 	set_bit(seen, 0);
@@ -96,21 +92,6 @@ int run_program(struct operation *stack, const int terminator, struct machine *v
 	}
 
 	return vm->accumulator;
-}
-
-int brute_force(struct operation *stack, int terminator) {
-	int i, answer;
-	struct machine vm = {.pc = 0, .accumulator = 0};
-
-	for (i=0; i<terminator; i++) {
-		switch_ops(&stack[i]);
-		answer = run_program(stack, terminator, &vm);
-		if (answer > 0) {
-			return answer;
-		}
-		switch_ops(&stack[i]);
-	}
-	return answer;
 }
 
 int backtrace(struct operation *stack, int terminator) {
@@ -163,11 +144,11 @@ void switch_ops(struct operation *op) {
 		op->op = JMP;
 }
 
-void set_bit(unsigned int *arr, int k) {
+void set_bit(unsigned int *arr, int k) { // Hella memory unsafe
 	arr[k / (sizeof(int) * 8)] |= 1 << (k % (sizeof(int) * 8));
 }
 
-bool check_bit(unsigned int *arr, int k) {
+bool check_bit(unsigned int *arr, int k) { // Hella memory unsafe
 	return arr[k / (sizeof(int) * 8)] & (1 << k % (sizeof(int) * 8));
 }
 
