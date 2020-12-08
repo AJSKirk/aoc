@@ -46,7 +46,7 @@ int main(int argc, char* argv[]) {
 
 
 	run_program(stack, terminator, &vm);
-	printf("Correct Register Value is: %d\n", vm.accumulator);
+	printf("Register Value at Failure is: %d\n", vm.accumulator);
 	printf("Correct Register Value is: %d\n", brute_force(stack, terminator));
 	
 	return 0;
