@@ -2,7 +2,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdbool.h>
-#include "binary_tree.h"
 
 #define PROGRAM_BUFFER 1024 // 128 * 8
 
@@ -21,7 +20,7 @@ struct machine {
 
 unsigned int parse_opcode(char *op_text);
 void execute(struct operation op, struct machine *vm);
-int run_program(struct operation *stack, int terminator);
+int run_program(struct operation *stack, int terminator, struct machine *vm);
 int brute_force(struct operation *stack, int terminator);
 void switch_ops(struct operation *op);
 void set_bit(unsigned int *arr, int k);
@@ -30,8 +29,8 @@ bool check_bit(unsigned int *arr, int k);
 int main(int argc, char* argv[]) {
 	struct operation stack[PROGRAM_BUFFER];
 	char op_text[4];
-	int i = 0, accumulator = 0, terminator;
-	struct node *root;
+	int i = 0, terminator;
+	struct machine vm = {.pc = 0, .accumulator = 0};
 	
 	while (scanf("%3s %d\n", op_text, &stack[i].arg) > 0) {
 		stack[i].op = parse_opcode(op_text);
@@ -45,19 +44,10 @@ int main(int argc, char* argv[]) {
 
 	terminator = i;
 
-	/*cursor = 0;
-	root = new_node(0);
-	while (1) {
-		cursor += execute(stack[cursor], &accumulator);
-		if (search(root, cursor) != NULL)
-			break;
-		insert(root, cursor);
-	}
 
-	printf("%d\n", accumulator);*/
-
-	accumulator = brute_force(stack, terminator);
-	printf("%d\n", accumulator);
+	run_program(stack, terminator, &vm);
+	printf("Correct Register Value is: %d\n", vm.accumulator);
+	printf("Correct Register Value is: %d\n", brute_force(stack, terminator));
 	
 	return 0;
 }
@@ -87,31 +77,33 @@ void execute(struct operation op, struct machine *vm) {
 	}
 }
 
-int run_program(struct operation *stack, const int terminator) {
+int run_program(struct operation *stack, const int terminator, struct machine *vm) {
 	// Returns final acc if program terminates, -1 if loops
-	struct machine vm = {.pc=0, .accumulator=0};
-	struct node *root = new_node(0);
-	unsigned int seen[PROGRAM_BUFFER / (sizeof(int) * 8)];
+	unsigned int seen[PROGRAM_BUFFER / (sizeof(int) * 8)] = {0U};
 	
 	//vm = calloc(1, sizeof(struct machine));  // Set PC and accumulator to zero
 
-	while (vm.pc < terminator) {
-		execute(stack[vm.pc], &vm);
-		if (search(root, vm.pc) != NULL) {
+	memset(vm, 0, sizeof(struct machine)); // Zero registers
+	set_bit(seen, 0);
+	while (vm->pc < terminator) {
+		execute(stack[vm->pc], vm);
+
+		if (check_bit(seen, vm->pc)) {
 			return -1;
 		}
-		insert(root, vm.pc);
+		set_bit(seen, vm->pc);
 	}
 
-	return vm.accumulator;
+	return vm->accumulator;
 }
 
 int brute_force(struct operation *stack, int terminator) {
 	int i, answer;
+	struct machine vm = {.pc = 0, .accumulator = 0};
 
 	for (i=0; i<terminator; i++) {
 		switch_ops(&stack[i]);
-		answer = run_program(stack, terminator);
+		answer = run_program(stack, terminator, &vm);
 		if (answer > 0) {
 			return answer;
 		}
@@ -128,10 +120,10 @@ void switch_ops(struct operation *op) {
 }
 
 void set_bit(unsigned int *arr, int k) {
-	arr[k / (sizeof(int) * 8)] |= 1U << (k % (sizeof(int) * 8));
+	arr[k / (sizeof(int) * 8)] |= 1 << (k % (sizeof(int) * 8));
 }
 
 bool check_bit(unsigned int *arr, int k) {
-	return arr[k / (sizeof(int) * k)] & (1U << k % (sizeof(int) * 8));
+	return arr[k / (sizeof(int) * 8)] & (1 << k % (sizeof(int) * 8));
 }
 
