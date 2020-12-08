@@ -15,17 +15,22 @@ struct operation {
 
 unsigned int parse_opcode(char *op_text);
 int execute(struct operation, int *acc);
+int simulation_check(struct operation *stack, int terminator);
+int brute_force(struct operation *stack, int terminator);
+void switch_ops(struct operation *op);
 
 int main(int argc, char* argv[]) {
 	struct operation stack[PROGRAM_BUFFER];
 	char op_text[4];
-	int cursor = 0, accumulator = 0;
+	int cursor = 0, accumulator = 0, terminator;
 	struct node *root;
 	
 	while (scanf("%3s %d\n", op_text, &stack[cursor].arg) > 0) {
 		stack[cursor].op = parse_opcode(op_text);
 		cursor++;
 	}
+
+	terminator = cursor;
 
 	cursor = 0;
 	root = new_node(0);
@@ -36,6 +41,9 @@ int main(int argc, char* argv[]) {
 		insert(root, cursor);
 	}
 
+	printf("%d\n", accumulator);
+
+	accumulator = brute_force(stack, terminator);
 	printf("%d\n", accumulator);
 	
 	return 0;
@@ -65,4 +73,40 @@ int execute(struct operation op, int *accumulator) {
 			printf("No such instruction %u\n", op.op);
 	}
 	return 1;
+}
+
+int simulation_check(struct operation *stack, int terminator) {
+	// Returns final acc if program terminates, -1 if loops
+	int cursor = 0, accumulator = 0;
+	struct node *root = new_node(0);
+
+	while (cursor != terminator) {
+		if (cursor > terminator) return -1;
+		cursor += execute(stack[cursor], &accumulator);
+		if (search(root, cursor) != NULL) { // Looping
+			return -1;
+		}
+		insert(root, cursor);
+	}
+
+	return accumulator;
+}
+
+int brute_force(struct operation *stack, int terminator) {
+	int i, answer;
+
+	for (i=0; i<terminator; i++) {
+		switch_ops(&stack[i]);
+		answer = simulation_check(stack, terminator);
+		if (answer > 0) break;
+		switch_ops(&stack[i]);
+	}
+	return answer;
+}
+
+void switch_ops(struct operation *op) {
+	if (op->op == jmp)
+		op->op = nop;
+	else if (op->op == nop)
+		op->op = jmp;
 }
