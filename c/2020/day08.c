@@ -25,6 +25,7 @@ int brute_force(struct operation *stack, int terminator);
 void switch_ops(struct operation *op);
 void set_bit(unsigned int *arr, int k);
 bool check_bit(unsigned int *arr, int k);
+int backtrace(struct operation *stack, int terminator);
 
 int main(int argc, char* argv[]) {
 	struct operation stack[PROGRAM_BUFFER];
@@ -47,7 +48,7 @@ int main(int argc, char* argv[]) {
 
 	run_program(stack, terminator, &vm);
 	printf("Register Value at Failure is: %d\n", vm.accumulator);
-	printf("Correct Register Value is: %d\n", brute_force(stack, terminator));
+	printf("Correct Register Value is: %d\n", backtrace(stack, terminator));
 	
 	return 0;
 }
@@ -110,6 +111,48 @@ int brute_force(struct operation *stack, int terminator) {
 		switch_ops(&stack[i]);
 	}
 	return answer;
+}
+
+int backtrace(struct operation *stack, int terminator) {
+	struct machine vm = {.pc = 0, .accumulator = .0};
+	unsigned int targets[PROGRAM_BUFFER / (sizeof(int) * 8)] = {0};
+	bool next_target = true, found = false;
+	int i, delta = 0;
+
+	// Initialise targets
+	set_bit(targets, terminator);
+	do {
+		delta = 0;
+		for (i=terminator-1; i>=0; i--) {
+			if (check_bit(targets, i)) 
+				continue;
+			if (next_target && (stack[i].op == ACC || stack[i].op == NOP)) {
+				set_bit(targets, i); // Make this op a target
+				delta++;
+			} else if (stack[i].op == JMP && check_bit(targets, i + stack[i].arg)) {
+				set_bit(targets, i);
+				delta++;
+			} else {
+				next_target = false;
+			}
+		}
+	} while (delta + 0);
+
+	// Run over and check changes
+	while (vm.pc < terminator) {
+		printf("%d\n", vm.pc);
+		if (!found && stack[vm.pc].op == JMP && check_bit(targets, vm.pc + 1)) {
+			switch_ops(&stack[vm.pc]);
+			found = true;
+		}
+		if (!found && stack[vm.pc].op == NOP && check_bit(targets, vm.pc + stack[vm.pc].arg)) {
+			switch_ops(&stack[vm.pc]);
+			found = true;
+		}
+		execute(stack[vm.pc], &vm);
+	}
+	
+	return vm.accumulator;
 }
 
 void switch_ops(struct operation *op) {
