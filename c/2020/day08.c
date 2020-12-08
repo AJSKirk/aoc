@@ -129,9 +129,11 @@ int backtrace(struct operation *stack, int terminator) {
 			if (next_target && (stack[i].op == ACC || stack[i].op == NOP)) {
 				set_bit(targets, i); // Make this op a target
 				delta++;
+				next_target = true;
 			} else if (stack[i].op == JMP && check_bit(targets, i + stack[i].arg)) {
 				set_bit(targets, i);
 				delta++;
+				next_target = true;
 			} else {
 				next_target = false;
 			}
@@ -140,7 +142,6 @@ int backtrace(struct operation *stack, int terminator) {
 
 	// Run over and check changes
 	while (vm.pc < terminator) {
-		printf("%d\n", vm.pc);
 		if (!found && stack[vm.pc].op == JMP && check_bit(targets, vm.pc + 1)) {
 			switch_ops(&stack[vm.pc]);
 			found = true;
