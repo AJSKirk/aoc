@@ -12,7 +12,7 @@ int compar(const void *a, const void *b);
 long find_region(long *seen, int len, long target);
 
 int main(int argc, char* argv[]) {
-	int i;
+	int i = 0;
 	long next, first_invalid = 0, expired = 0; // Too large for int!
 	long precursors_seen[PRECURSORS_LEN] = {0}, precursors_sort[PRECURSORS_LEN] = {0};
 	long seen[SEEN_LEN] = {0};
@@ -92,5 +92,6 @@ long find_region(long *seen, int len, long target) {
 			sum -= seen[lo++];
 		}
 	}
+	qsort(&seen[lo], hi - lo + 1, sizeof(long), compar);
 	return seen[lo] + seen[hi];
 }
