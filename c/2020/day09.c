@@ -4,16 +4,18 @@
 #include <stdbool.h>
 
 #define PRECURSORS_LEN 25
+#define SEEN_LEN 1024
 
 int check_valid(long next,  long precursors[]);
 void replace_precursor(long expired, long new, long sorted[]);
 int compar(const void *a, const void *b);
+long find_region(long *seen, int len, long target);
 
 int main(int argc, char* argv[]) {
 	int i;
 	long next, first_invalid = 0, expired = 0; // Too large for int!
 	long precursors_seen[PRECURSORS_LEN] = {0}, precursors_sort[PRECURSORS_LEN] = {0};
-	bool last_invalid;
+	long seen[SEEN_LEN] = {0};
 	
 	while (scanf("%ld\n", &next) > 0) {
 		if (i >= PRECURSORS_LEN) {  // Skipped for preamble
@@ -21,13 +23,20 @@ int main(int argc, char* argv[]) {
 			expired = precursors_seen[i % PRECURSORS_LEN];
 		}
 
+		if (i > SEEN_LEN) {
+			printf("Seen buffer overflow!\n");
+			exit(EXIT_FAILURE);
+		}
+		seen[i] = next;
+
 		precursors_seen[i++ % PRECURSORS_LEN] = next;  // Start overwriting oldest
 		replace_precursor(expired, next, precursors_sort);
 		qsort(precursors_sort, PRECURSORS_LEN, sizeof(long), compar);
 		// TODO: Replace with insertion sort - faster on nearly sorted data
 	}
-	
-	printf("%ld\n", next);
+
+	printf("First Invalid Number: %ld\n", next);
+	printf("Weakness: %ld\n", find_region(seen, i, next));
 	return 0;
 }
 
@@ -71,3 +80,17 @@ int check_valid(long next, long *precursors) {
 	return 0;
 }
 
+
+long find_region(long *seen, int len, long target) {
+	int lo = 0, hi = 1, sum;
+
+	sum = seen[lo] + seen[hi];
+	while (sum != target) {
+		if (sum < target) {
+			sum += seen[++hi];
+		} else {
+			sum -= seen[lo++];
+		}
+	}
+	return seen[lo] + seen[hi];
+}
