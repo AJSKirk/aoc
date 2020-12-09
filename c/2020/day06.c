@@ -50,9 +50,10 @@ set_t populate_set(const char *person) {
 }
 
 unsigned int get_cardinality(set_t set) {
-	int i, card = 0;
-	for (i=0; i<8*sizeof(set_t); i++) { // Remember sizeof is bytes, not bits
-		card += 1U & (set >> i);
+	int  card = 0;
+	while (set != 0U) {
+		set &= (set - 1);  // Deleted rightmost bit of set
+		card++;
 	}
 	return card;
 }
