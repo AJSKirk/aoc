@@ -23,8 +23,9 @@ int main(int argc, char* argv[]) {
 
 	qsort(outputs, len, sizeof(int), compar);
 
-	printf("%d\n", use_all(outputs, len));
-	printf("%ld\n", count_combinations(outputs, len));
+	printf("Jolt Difference Product: %d\n", use_all(outputs, len));
+	printf("Number of Possible Paths: %ld\n", count_combinations(outputs, len));
+
 	return 0;
 }
 
@@ -44,13 +45,13 @@ int use_all(int *outputs, int len) {
 
 long count_combinations(int outputs[],  int len) {
 	// Expects sorted array
-	long *paths;
+	long paths[len];  // WARNING: Stack is fine here, but switch to calloc if needed for a larger problem
 	int i, lookahead;
 
-	paths = calloc(len, sizeof(long));
 	paths[len-1] = 1;
 
 	for (i=len-2; i>=0; i--)  {
+		paths[i] = 0;
 		for (lookahead=1; lookahead<=3; lookahead++) {
 			if (i + lookahead >= len || outputs[i + lookahead] - outputs[i] > 3) {
 				break;
