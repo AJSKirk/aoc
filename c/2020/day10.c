@@ -52,11 +52,9 @@ long count_combinations(int outputs[],  int len) {
 
 	for (i=len-2; i>=0; i--)  {
 		paths[i] = 0;
-		for (lookahead=1; lookahead<=3; lookahead++) {
-			if (i + lookahead >= len || outputs[i + lookahead] - outputs[i] > 3) {
-				break;
-			}
-			paths[i] += paths[i + lookahead];
+		lookahead = 1;
+		while (lookahead <= 3  && lookahead + i < len && outputs[lookahead + i] - outputs[i] <= 3) {
+			paths[i] += paths[i + lookahead++];
 		}
 	}
 
