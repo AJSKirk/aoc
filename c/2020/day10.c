@@ -7,7 +7,7 @@
 
 int use_all(int *outputs, int len);
 int compar(const void *a, const void *b);
-long count_combinations(int *outputs,  int len, int target);
+long count_combinations(int *outputs,  int len);
 
 int main(int argc, char* argv[]) {
 	int len = 0;
@@ -26,7 +26,7 @@ int main(int argc, char* argv[]) {
 	qsort(outputs, len, sizeof(int), compar);
 
 	printf("%d\n", use_all(outputs, len));
-	printf("%ld\n", count_combinations(outputs, len, outputs[len - 1] + 3));
+	printf("%ld\n", count_combinations(outputs, len));
 	return 0;
 }
 
@@ -53,20 +53,25 @@ int use_all(int *outputs, int len) {
 	}
 }*/
 
-long count_combinations(int outputs[],  int len, int target) {
+long count_combinations(int outputs[],  int len) {
 	// Expects sorted array
-	int lookahead, paths=0;
-	
-	if (len == 1)
-		return 1;
+	//long paths[len];
+	long *paths;
+	int i, lookahead;
 
-	for (lookahead=1; lookahead<=3; lookahead++) {
-		if (lookahead > len || outputs[lookahead] - outputs[0] > 3) {
-			return paths;
+	paths = calloc(len, sizeof(long));
+	paths[len-1] = 1;
+
+	for (i=len-2; i>=0; i--)  {
+		for (lookahead=1; lookahead<=3; lookahead++) {
+			if (i + lookahead >= len || outputs[i + lookahead] - outputs[i] > 3) {
+				break;
+			}
+			paths[i] += paths[i + lookahead];
 		}
-		paths += count_combinations(&outputs[lookahead], len - lookahead, target);
 	}
-	return paths;
+
+	return paths[0];
 }
 
 int compar(const void *a, const void *b) {
