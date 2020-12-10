@@ -13,6 +13,8 @@ int main(int argc, char* argv[]) {
 	int len = 0;
 	int outputs[MAX_ADAPTERS];
 	
+	outputs[0] = 0;
+	len++;
 	while (scanf("%d\n", &outputs[len]) > 0) {
 		if (len >= MAX_ADAPTERS) {
 			printf("Buffer overflow!\n");
@@ -42,15 +44,24 @@ int use_all(int *outputs, int len) {
 
 }
 
+/*int locate_cuts(int *outputs, len) {
+	int i;
+
+	for (i=0; i<len; i++) {
+		if
+
+	}
+}*/
+
 long count_combinations(int outputs[],  int len, int target) {
 	// Expects sorted array
 	int lookahead, paths=0;
 	
-	if (target - outputs[len - 1] <= 3)
+	if (len == 1)
 		return 1;
 
 	for (lookahead=1; lookahead<=3; lookahead++) {
-		if (lookahead >= len || outputs[lookahead] - outputs[0] > 3) {
+		if (lookahead > len || outputs[lookahead] - outputs[0] > 3) {
 			return paths;
 		}
 		paths += count_combinations(&outputs[lookahead], len - lookahead, target);
