@@ -1,7 +1,5 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
-#include <stdbool.h>
 
 #define MAX_ADAPTERS 128
 
@@ -13,7 +11,7 @@ int main(int argc, char* argv[]) {
 	int len = 0;
 	int outputs[MAX_ADAPTERS];
 	
-	outputs[0] = 0;
+	outputs[0] = 0;  // Initial Jolts needed for part 2
 	len++;
 	while (scanf("%d\n", &outputs[len]) > 0) {
 		if (len >= MAX_ADAPTERS) {
@@ -41,21 +39,11 @@ int use_all(int *outputs, int len) {
 	}
 
 	return deltas[1] * deltas[3];
-
 }
 
-/*int locate_cuts(int *outputs, len) {
-	int i;
-
-	for (i=0; i<len; i++) {
-		if
-
-	}
-}*/
 
 long count_combinations(int outputs[],  int len) {
 	// Expects sorted array
-	//long paths[len];
 	long *paths;
 	int i, lookahead;
 
