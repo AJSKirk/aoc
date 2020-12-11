@@ -15,15 +15,23 @@ int count_adjacent(char seats[][MAX_WIDTH], int height, int width, int row, int 
 int count_visible(char seats[][MAX_WIDTH], int height, int width, int row, int col);
 
 int main(int argc, char* argv[]) {
-	int height=0, width=0, col=0;
+	int height, width, col;
 	char seats[MAX_HEIGHT][MAX_WIDTH];
 	char c;
 	
+	for (col=0; col<MAX_WIDTH; col++)
+		seats[0][col] = '.';  // Top halo
+
+	seats[1][1] = '.';
+	col = 1;
+	height = 1;
 	while ((c = getchar()) != EOF) {
 		if (c == '\n') {
+			seats[height][col++] = '.';  // Right halo
 			width = col;
 			col = 0;
 			height++;
+			seats[height][col++] = '.';  // Left halo
 			continue;
 		} else {
 			seats[height][col++] = c;
@@ -84,13 +92,10 @@ int count_adjacent(char seats[][MAX_WIDTH], int height, int width, int row, int 
 	int neighbours = 0;
 	int nrow, ncol;
 
-	for (nrow = row - (row != 0); nrow <= row + (row != height - 1); nrow++) {
-		for (ncol = col - (col != 0); ncol <= col + (col != width - 1); ncol++) {
-			if (nrow != row || ncol != col) {
+	for (nrow=row-1; nrow<=row+2; nrow++)
+		for (ncol=col-1; ncol<=col+2; ncol++)
+			if (nrow != row || ncol != col)
 				neighbours += seats[nrow][ncol] == '#';
-			}
-		}
-	}
 
 	return neighbours;
 }
