@@ -10,6 +10,7 @@
 struct bus {
 	long route;
 	long offset;
+	int slot;
 };
 
 
@@ -30,7 +31,7 @@ int main(int argc, char *argv[]) {
 	for (bus_name=strtok(line, ",\n"); bus_name; bus_name=strtok(NULL, ",\n")) {
 		if (*bus_name != 'x') {
 			routes[len].route = atoi(bus_name);
-			routes[len].offset = (routes[len].route - slot) % routes[len].route;
+			routes[len].offset = (routes[len].route - (slot % routes[len].route)) % routes[len].route;
 			wait = routes[len].route - (arrive_time % routes[len].route);
 			if (wait < min_wait) {
 				min_wait = wait;
@@ -42,14 +43,13 @@ int main(int argc, char *argv[]) {
 	}
 
 
-	//printf("%d\n", min_wait * min_route);
-	printf("%ld\n", reduce_period(routes, len, start_acc).offset);
+	printf("Min Wait * First Route: %d\n", min_wait * min_route);
+	printf("Earliest Offset: %ld\n", reduce_period(routes, len, start_acc).offset);
 
 	return 0;
 }
 
 struct bus mutual_period(struct bus *left, struct bus *right) {
-	// Assumes zero offset for left (i.e. left-reduction)
 	long i;
 	struct bus out;
 	for (i=left->offset; i<=left->route*right->route; i+=left->route) {
