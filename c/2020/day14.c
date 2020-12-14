@@ -64,14 +64,14 @@ struct mask process_mask(char *mask_str) {
 }
 
 void write_decode_memory(long loc, long float_mask, long to_store, hash_t *mem, int i) {
-	if (i == NUM_BITS - 1 || float_mask >> i == 0L) {
+	if (i == NUM_BITS || float_mask >> i == 0L) {
 		hash_insert(mem, loc, to_store);
 		return;
 	}
-	for (;i<NUM_BITS-1; i++) {
+	for (;i<=NUM_BITS; i++) {
 		if (1L & (float_mask >> i)) {
-			write_decode_memory(loc & ~(1L << i), (float_mask >> i) << i, to_store, mem, i + 1);
-			write_decode_memory(loc | (1L << i), (float_mask >> i) << i, to_store, mem, i + 1);
+			write_decode_memory(loc & ~(1L << i), float_mask, to_store, mem, i + 1);
+			write_decode_memory(loc | (1L << i), float_mask, to_store, mem, i + 1);
 			break; // Prevent double writes in the same stack level
 		}
 	}

@@ -46,7 +46,9 @@ long long sum_values(hash_t *h) {
 	int i;
 	long total = 0;
 	for (i=0; i<h->size; i++) {
-		total += h->values[i];
+		if (h->values[i] != 0) {
+			total += h->values[i];
+		}
 	}
 	return total;
 }
