@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include "lib/hashtable_num.h"
 
-#define HISTORY_SIZE 2048 * 4096 * 4
+#define HISTORY_SIZE 2048 * 2048
 #define DURATION 30000000
 
 int main(int argc, char *argv[]) {

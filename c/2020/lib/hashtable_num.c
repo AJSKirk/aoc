@@ -19,9 +19,17 @@ hash_t *hash_new(int size) {
 	return h;
 }
 
+long hash(long x) {
+	x = ((x >> 16) ^ x) * 0x45d9f3b;
+	x = ((x >> 16) ^ x) * 0x45d9f3b;
+	x = (x >> 16) ^ x;
+	return x;
+}
+
 int hash_index(hash_t *h, long key) {
 	// Index with 1-forward probing
-	int i = key % h->size; 
+	int i = hash(key) % h->size;
+
 	while (h->keys[i]) {
 		if (h->keys[i] == key) {
 			return i;
