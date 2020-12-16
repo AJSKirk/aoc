@@ -2,12 +2,12 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
-#include <stdbool.h>
 
 #define LINE_BUFFER 128
 #define MAX_FIELDS 24
-#define MAX_RANGES 2
+#define MAX_RANGES 2  // Dynamic allocation? Never heard of it
 #define NAME_BUFFER 24
+#define MAX_TICKETS 256
 
 struct range {
 	int min;
@@ -20,16 +20,17 @@ struct field {
 	struct range ranges[MAX_RANGES];
 };
 
+typedef unsigned int set_t;  // 32 bits big enough here
 
-bool check_valid(struct field rule, int value);
+unsigned int check_valid(struct field rule, int value);
 
 int main(int argc, char *argv[]) {
 	char line[LINE_BUFFER], *range_str, *value_str, *next_row;
 	struct field fields[MAX_FIELDS];
 
-	int i = 0, num_fields;
+	int i = 0, j, num_fields;
 	int error_rate = 0, value;
-	bool valid;
+	set_t valid_fields[MAX_TICKETS];
 
 	// Parse rules
 	for (fgets(line, LINE_BUFFER, stdin); line[0] != '\n'; fgets(line, LINE_BUFFER, stdin)) {
@@ -47,18 +48,21 @@ int main(int argc, char *argv[]) {
 	for (fgets(line, LINE_BUFFER, stdin); line[0] != 'n'; fgets(line, LINE_BUFFER, stdin)) {;};
 
 	// Parse nearby tickets
+	i = 0;
 	for (next_row=fgets(line, LINE_BUFFER, stdin); next_row!=NULL; next_row=fgets(line, LINE_BUFFER, stdin)) {
 		for (value_str=strtok(line, ",\n"); value_str!=NULL; value_str=strtok(NULL, ",\n")) {
 			value = atoi(value_str);
-			valid = false;
-			for (i=0; i<num_fields; i++) {
-				if (check_valid(fields[i], value)) {
-					valid = true;
-					break;  // Don't check any more rules on this value
-				}
+			valid_fields[i] = 0U;
+			for (j=0; j<num_fields; j++) {
+				valid_fields[i] |= check_valid(fields[j], value) << j;
 			}
-			if (!valid)
+			if (valid_fields[i] == 0)
 				error_rate += value;
+		}
+		i++;
+		if (i >= MAX_TICKETS) {
+			printf("Ticket buffer overrun\n");
+			exit(EXIT_FAILURE);
 		}
 	}
 
@@ -67,11 +71,11 @@ int main(int argc, char *argv[]) {
 	return 0;
 }
 
-bool check_valid(struct field rule, int value) {
+unsigned int check_valid(struct field rule, int value) {
 	int i;
 	for (i=0; i<rule.nranges; i++) {
 		if (value >= rule.ranges[i].min && value <= rule.ranges[i].max)
-			return true;
+			return 1U;
 	}
-	return false;
+	return 0U;
 }
