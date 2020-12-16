@@ -35,6 +35,8 @@ int main(int argc, char *argv[]) {
 	set_t global_valid[MAX_FIELDS];
 	set_t local_valid;
 	set_t locked;
+	int *my_ticket;
+	long product;
 
 	// Parse rules
 	for (fgets(line, LINE_BUFFER, stdin); line[0] != '\n'; fgets(line, LINE_BUFFER, stdin)) {
@@ -49,8 +51,17 @@ int main(int argc, char *argv[]) {
 	}
 	num_fields = i;
 
-	// Skip my ticket
-	for (fgets(line, LINE_BUFFER, stdin); line[0] != 'n'; fgets(line, LINE_BUFFER, stdin)) {;};
+	my_ticket = (int *) malloc(num_fields * sizeof(int));
+	i = 0;
+	// Save my ticket
+	for (fgets(line, LINE_BUFFER, stdin); line[0] != 'n'; fgets(line, LINE_BUFFER, stdin)) {
+		if (isdigit(line[0])) {
+			for (value_str=strtok(line, ",\n"); value_str!=NULL; value_str=strtok(NULL, ",\n")) {
+				my_ticket[i] = atoi(value_str);
+				i++;
+			}
+		}
+	}
 
 	// Parse nearby tickets
 	for (next_row=fgets(line, LINE_BUFFER, stdin); next_row!=NULL; next_row=fgets(line, LINE_BUFFER, stdin)) {
@@ -84,11 +95,16 @@ int main(int argc, char *argv[]) {
 		}
 	}
 
+	// Compute product
+	product = 1;
 	for (i=0; i<num_fields; i++) {
-		printf("%s - %d\n", fields[i].name, fields[i].position);
+		if (strncmp(fields[i].name, "departure", 9) == 0) {
+			product *= my_ticket[fields[i].position];
+		}
 	}
 
-	printf("%d\n", error_rate);
+	printf("Scanning Error Rate: %d\n", error_rate);
+	printf("Departure Product: %ld\n", product);
 
 	return 0;
 }
