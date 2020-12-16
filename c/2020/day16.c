@@ -7,7 +7,6 @@
 #define MAX_FIELDS 24
 #define MAX_RANGES 2  // Dynamic allocation? Never heard of it
 #define NAME_BUFFER 24
-#define MAX_TICKETS 256
 
 struct range {
 	int min;
@@ -18,19 +17,23 @@ struct field {
 	char name[NAME_BUFFER];
 	int nranges;
 	struct range ranges[MAX_RANGES];
+	int position;
 };
 
 typedef unsigned int set_t;  // 32 bits big enough here
 
 unsigned int check_valid(struct field rule, int value);
+void zero_bit(set_t *fields, int bit);
+unsigned int find_set_bit(set_t set);
 
 int main(int argc, char *argv[]) {
 	char line[LINE_BUFFER], *range_str, *value_str, *next_row;
 	struct field fields[MAX_FIELDS];
 
-	int i = 0, j, num_fields;
-	int error_rate = 0, value;
-	set_t valid_fields[MAX_TICKETS];
+	int i = 0, j, num_fields, num_tickets, num_locked;
+	int error_rate = 0, value, bit;
+	set_t global_valid[MAX_FIELDS];
+	set_t local_valid;
 
 	// Parse rules
 	for (fgets(line, LINE_BUFFER, stdin); line[0] != '\n'; fgets(line, LINE_BUFFER, stdin)) {
@@ -40,6 +43,7 @@ int main(int argc, char *argv[]) {
 			sscanf(range_str, "%d-%d", &fields[i].ranges[fields[i].nranges].min, &fields[i].ranges[fields[i].nranges].max);
 			fields[i].nranges++;
 		}
+		global_valid[i] = ~0;
 		i++;
 	}
 	num_fields = i;
@@ -48,21 +52,34 @@ int main(int argc, char *argv[]) {
 	for (fgets(line, LINE_BUFFER, stdin); line[0] != 'n'; fgets(line, LINE_BUFFER, stdin)) {;};
 
 	// Parse nearby tickets
-	i = 0;
 	for (next_row=fgets(line, LINE_BUFFER, stdin); next_row!=NULL; next_row=fgets(line, LINE_BUFFER, stdin)) {
 		for (value_str=strtok(line, ",\n"); value_str!=NULL; value_str=strtok(NULL, ",\n")) {
 			value = atoi(value_str);
-			valid_fields[i] = 0U;
+			local_valid = 0U;
 			for (j=0; j<num_fields; j++) {
-				valid_fields[i] |= check_valid(fields[j], value) << j;
+				local_valid |= check_valid(fields[j], value) << j;
 			}
-			if (valid_fields[i] == 0)
+			if (local_valid == 0)
 				error_rate += value;
+			else
+				global_valid[j] &= local_valid;
 		}
-		i++;
-		if (i >= MAX_TICKETS) {
-			printf("Ticket buffer overrun\n");
-			exit(EXIT_FAILURE);
+	}
+
+	for (i=0; i<num_fields; i++) {
+		printf("%u\n", global_valid[i]);
+	}
+
+	// Identify fields
+	num_locked = 0;
+	while (num_locked < num_fields) {
+		for (i=0; i<num_fields; i++) {
+			if ((global_valid[i] & (global_valid[i] - 1)) == 0) {  // Neat trick from K&R to zero rightmost nonzero bit
+				bit = find_set_bit(global_valid[i]);
+				fields[bit].position = i;
+				zero_bit(global_valid, bit);
+				num_locked++;
+			}
 		}
 	}
 
@@ -78,4 +95,23 @@ unsigned int check_valid(struct field rule, int value) {
 			return 1U;
 	}
 	return 0U;
+}
+
+void zero_bit(set_t *fields, int bit) {
+	int i;
+	for (i=0; i<8*sizeof(set_t); i++) {
+		if (fields[i] == 1U << bit)
+			continue;
+		fields[i] &= ~(1U << bit);
+	}
+}
+
+unsigned int find_set_bit(set_t set) {
+	// Assumes only one bit set
+	int i;
+	for (i=0; i<8*sizeof(set_t); i++) {
+		if (set >> i == 1U)
+			return i;
+	}
+	return 0;
 }
