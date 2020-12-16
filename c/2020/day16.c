@@ -23,7 +23,7 @@ struct field {
 typedef unsigned int set_t;  // 32 bits big enough here
 
 unsigned int check_valid(struct field rule, int value);
-void zero_bit(set_t *fields, int bit);
+void zero_bit(set_t *fields, int bit, int len);
 unsigned int find_set_bit(set_t set);
 
 int main(int argc, char *argv[]) {
@@ -34,6 +34,7 @@ int main(int argc, char *argv[]) {
 	int error_rate = 0, value, bit;
 	set_t global_valid[MAX_FIELDS];
 	set_t local_valid;
+	set_t locked;
 
 	// Parse rules
 	for (fgets(line, LINE_BUFFER, stdin); line[0] != '\n'; fgets(line, LINE_BUFFER, stdin)) {
@@ -53,6 +54,7 @@ int main(int argc, char *argv[]) {
 
 	// Parse nearby tickets
 	for (next_row=fgets(line, LINE_BUFFER, stdin); next_row!=NULL; next_row=fgets(line, LINE_BUFFER, stdin)) {
+		i = 0;
 		for (value_str=strtok(line, ",\n"); value_str!=NULL; value_str=strtok(NULL, ",\n")) {
 			value = atoi(value_str);
 			local_valid = 0U;
@@ -62,25 +64,28 @@ int main(int argc, char *argv[]) {
 			if (local_valid == 0)
 				error_rate += value;
 			else
-				global_valid[j] &= local_valid;
+				global_valid[i] &= local_valid;
+			i++;
 		}
-	}
-
-	for (i=0; i<num_fields; i++) {
-		printf("%u\n", global_valid[i]);
 	}
 
 	// Identify fields
 	num_locked = 0;
+	locked = 0U;
 	while (num_locked < num_fields) {
 		for (i=0; i<num_fields; i++) {
-			if ((global_valid[i] & (global_valid[i] - 1)) == 0) {  // Neat trick from K&R to zero rightmost nonzero bit
+			if (((locked >> i) & 1U) == 0 && (global_valid[i] & (global_valid[i] - 1)) == 0) {  // Neat trick from K&R to zero rightmost nonzero bit
 				bit = find_set_bit(global_valid[i]);
 				fields[bit].position = i;
-				zero_bit(global_valid, bit);
+				zero_bit(global_valid, bit, num_fields);
 				num_locked++;
+				locked |= 1U << i;
 			}
 		}
+	}
+
+	for (i=0; i<num_fields; i++) {
+		printf("%s - %d\n", fields[i].name, fields[i].position);
 	}
 
 	printf("%d\n", error_rate);
@@ -97,9 +102,9 @@ unsigned int check_valid(struct field rule, int value) {
 	return 0U;
 }
 
-void zero_bit(set_t *fields, int bit) {
+void zero_bit(set_t *fields, int bit, int len) {
 	int i;
-	for (i=0; i<8*sizeof(set_t); i++) {
+	for (i=0; i<len; i++) {
 		if (fields[i] == 1U << bit)
 			continue;
 		fields[i] &= ~(1U << bit);
