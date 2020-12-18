@@ -10,11 +10,10 @@ struct frame {
 
 struct frame stack[STACK_HEIGHT];
 int stack_cursor = 0;
-void push(struct frame);
-struct frame pop(void);
 
 long execute(char op, long left, long right);
-char peek(FILE *stream);
+void push(struct frame);
+struct frame pop(void);
 
 int main(int argc, char *argv[]) {
 	long global_total = 0, tmp = 0;
@@ -91,13 +90,6 @@ long execute(char op, long left, long right) {
 	}
 	return 0;
 
-}
-
-char peek(FILE *stream) {
-	char c;
-	while ((c = getc(stream)) == ' ') {;}
-	ungetc(c, stream);
-	return c;
 }
 
 void push(struct frame f) {
