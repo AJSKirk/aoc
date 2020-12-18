@@ -3,32 +3,43 @@
 
 #define STACK_HEIGHT 8
 
+struct frame {
+	long total;
+	char op;
+};
+
+struct frame stack[STACK_HEIGHT];
+int stack_cursor = 0;
+void push(struct frame);
+struct frame pop(void);
+
 long execute(char op, long left, long right);
+char peek(FILE *stream);
 
 int main(int argc, char *argv[]) {
 	long local_total = 0, global_total = 0;
-	long total_stack[STACK_HEIGHT], stack_cursor = 0;
-	char op_stack[STACK_HEIGHT];
 	char c, op = '+';
+	struct frame f;
 
 	while ((c = getchar()) != EOF) switch (c) {
 		case ' ':
 			break;
 		case '\n':
+			printf("%ld\n", local_total);
 			global_total += local_total;
 			local_total = 0;
 			op = '+';
 			stack_cursor = 0;
 			break;
 		case '(':
-			op_stack[stack_cursor] = op;
-			total_stack[stack_cursor++] = local_total;  // Push previous total
+			f.op = op; f.total = local_total;
+			push(f);
 			local_total = 0;
 			op = '+';
 			break;
 		case  ')':
-			op = op_stack[--stack_cursor];
-			local_total = execute(op, total_stack[stack_cursor], local_total);
+			f = pop();
+			local_total = execute(f.op, f.total, local_total);
 			break;
 		case '+':
 		case '*':
@@ -53,4 +64,19 @@ long execute(char op, long left, long right) {
 	}
 	return 0;
 
+}
+
+char peek(FILE *stream) {
+	char c;
+	while ((c = getc(stream)) == ' ') {;}
+	ungetc(c, stream);
+	return c;
+}
+
+void push(struct frame f) {
+	stack[stack_cursor++] = f;
+}
+
+struct frame pop(void) {
+	return stack[--stack_cursor];
 }
