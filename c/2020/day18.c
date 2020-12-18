@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#define STACK_HEIGHT 8
+#define STACK_HEIGHT 16
 
 struct frame {
 	long total;
@@ -17,35 +17,63 @@ long execute(char op, long left, long right);
 char peek(FILE *stream);
 
 int main(int argc, char *argv[]) {
-	long local_total = 0, global_total = 0;
-	char c, op = '+';
-	struct frame f;
+	long global_total = 0, tmp = 0;
+	char c;
+	struct frame f = {.op = '+', .total = 0};
 
+	push(f);
+	push(f);
 	while ((c = getchar()) != EOF) switch (c) {
 		case ' ':
 			break;
 		case '\n':
-			global_total += local_total;
-			local_total = 0;
-			op = '+';
+			tmp = f.total;
+			f = pop();
+			tmp = f.total = execute(f.op, f.total, tmp);
+			f = pop();
+			f.total = execute(f.op, f.total, tmp);
+			global_total += f.total;
+			f.op = '+'; f.total = 0;
 			stack_cursor = 0;
+			push(f);
+			push(f);
 			break;
 		case '(':
-			f.op = op; f.total = local_total;
 			push(f);
-			local_total = 0;
-			op = '+';
+			f.op = '+'; f.total = 0;
+			push(f);
+			push(f);
 			break;
 		case  ')':
+			tmp = f.total;
 			f = pop();
-			local_total = execute(f.op, f.total, local_total);
+			tmp = f.total = execute(f.op, f.total, tmp);
+			f = pop();
+			tmp = f.total = execute(f.op, f.total, tmp);
+			f = pop();
+			f.total = execute(f.op, f.total, tmp);
 			break;
 		case '+':
+			tmp = f.total;
+			f = pop();
+			f.total = execute(f.op, f.total, tmp);
+			f.op = c;
+			push(f);
+			f.op = '+'; f.total = 0;
+			break;
 		case '*':
-			op = c;
+			tmp = f.total;
+			f = pop();
+			tmp = f.total = execute(f.op, f.total, tmp);
+			f = pop();
+			f.total = execute(f.op, f.total, tmp);
+			f.op = c;
+			push(f);
+			f.op = '+'; f.total = 0;
+			push(f);
 			break;
 		default:  // Number
-			local_total = execute(op, local_total, c - '0');
+			f.total = execute(f.op, f.total, c - '0');
 	}
 	printf("%ld\n", global_total);
 
