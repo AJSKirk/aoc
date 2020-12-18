@@ -25,7 +25,6 @@ int main(int argc, char *argv[]) {
 		case ' ':
 			break;
 		case '\n':
-			printf("%ld\n", local_total);
 			global_total += local_total;
 			local_total = 0;
 			op = '+';
@@ -46,7 +45,7 @@ int main(int argc, char *argv[]) {
 			op = c;
 			break;
 		default:  // Number
-			local_total = execute(op, local_total, atoi(&c));
+			local_total = execute(op, local_total, c - '0');
 	}
 	printf("%ld\n", global_total);
 
