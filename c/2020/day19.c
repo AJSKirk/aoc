@@ -47,6 +47,7 @@ int main(int argc, char *argv[]) {
 	}
 
 	for (next=fgets(row, ROW_BUFFER, stdin); next!=NULL; next=fgets(row, ROW_BUFFER, stdin)) {
+		printf("%s", row);
 		increment = check(e_rules[0], row);
 		if (increment != -1 && row[increment] == '\n')
 			passing++;
