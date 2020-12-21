@@ -1,6 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <math.h>
+#include <stdbool.h>
 #include "lib/hashtable.h"
 
 #define WORD_BUFFER 16
@@ -17,18 +19,20 @@ struct food {
 };
 
 struct food foods[MAX_FOODS];
+int num_foods;
 hash_t *ingredient_hash;
 hash_t *allergen_hash ;
 
 // Function Prototypes
 struct food intersection(struct food f1, struct food f2);
+int lock_allergen(char *allergen);
 
 
 int main(int argc, char *argv[]) {
 	char line[LINE_BUFFER], *next_line;
 	char *word;
 	int i, j;
-	int num_foods, delta, n_safe;
+	int delta, n_safe;
 	struct food intersect;
 
 	ingredient_hash = hash_new(MAX_FOODS);
@@ -44,21 +48,16 @@ int main(int argc, char *argv[]) {
 		for (word=strtok(NULL, ", )\n"); word!=NULL; word=strtok(NULL, ", )\n")) {
 			strncpy(foods[i].allergens[j++], word, WORD_BUFFER);
 		}
+		foods[i].n_allergens = j;
 		i++;
 	}
 	num_foods = i;
 
 	do {
 		delta = 0;
-		for (i=0; i<num_foods; i++)
-			for (j=i; j<num_foods; j++) {  // Start at i to self-intersect
-				intersect = intersection(foods[i], foods[j]);
-				if (intersect.n_ingredients == 1 && intersect.n_allergens == 1) {
-					hash_insert(ingredient_hash, intersect.ingredients[0], intersect.allergens[0]);
-					hash_insert(allergen_hash, intersect.allergens[0], intersect.ingredients[0]);
-					delta++;
-				}
-			}
+		for (i=0; i<num_foods; i++) 
+			for (j=0; j<foods[i].n_allergens; j++)
+				delta += lock_allergen(foods[i].allergens[j]);
 	} while (delta > 0);
 
 	n_safe = 0;
@@ -116,4 +115,36 @@ struct food intersection(struct food f1, struct food f2) {
 	res.n_allergens = k;
 
 	return res;
+}
+
+int lock_allergen(char *allergen) {
+	int i, j;
+	bool first, contained;
+	struct food intersect;
+	if (hash_lookup(allergen_hash, allergen))
+		return 0;
+	first = true;
+	for (i=0; i<num_foods; i++) {
+		contained = false;
+		for (j=0; j<foods[i].n_allergens; j++) 
+			if (strncmp(foods[i].allergens[j], allergen, WORD_BUFFER) == 0) {
+				contained = true;
+				break;
+			}
+
+		if (contained) {
+			if (first) {
+				intersect = intersection(foods[i], foods[i]);
+				first = false;
+			} else
+				intersect = intersection(intersect, foods[i]);
+		}
+	}
+
+	if (intersect.n_ingredients == 1 && intersect.n_allergens == 1) {
+		hash_insert(ingredient_hash, intersect.ingredients[0], intersect.allergens[0]);
+		hash_insert(allergen_hash, intersect.allergens[0], intersect.ingredients[0]);
+		return 1;
+	}
+	return 0;
 }
