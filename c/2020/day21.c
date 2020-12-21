@@ -144,6 +144,7 @@ int lock_allergen(char *allergen) {
 	if (intersect.n_ingredients == 1 && intersect.n_allergens == 1) {
 		hash_insert(ingredient_hash, intersect.ingredients[0], intersect.allergens[0]);
 		hash_insert(allergen_hash, intersect.allergens[0], intersect.ingredients[0]);
+		printf("%s - %s\n", intersect.allergens[0], intersect.ingredients[0]);
 		return 1;
 	}
 	return 0;
