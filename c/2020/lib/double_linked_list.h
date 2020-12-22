@@ -23,3 +23,4 @@ NODE_TYPE peek_head(struct list_meta *list);
 NODE_TYPE peek_tail(struct list_meta *list);
 NODE_TYPE pop_head(struct list_meta *list);
 NODE_TYPE pop_tail(struct list_meta *list);
+NODE_TYPE *to_array(struct list_meta *list);

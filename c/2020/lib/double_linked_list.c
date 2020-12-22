@@ -84,3 +84,13 @@ NODE_TYPE pop_tail(struct list_meta *list) {
 	free(orphan_loc);
 	return v;
 }
+
+NODE_TYPE *to_array(struct list_meta *list) {
+	NODE_TYPE *arr = malloc(list->length * sizeof(NODE_TYPE));
+	int i = 0;
+	struct node *current;
+	for (current=list->head; current!=NULL; current=current->next) {
+		arr[i++] = current->value;
+	}
+	return arr;
+}
