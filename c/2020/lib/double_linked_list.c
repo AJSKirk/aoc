@@ -114,15 +114,7 @@ struct list_meta *slice_after_head(struct list_meta *src, int depth) {
 	return slice;
 }
 
-void insert_slice(struct list_meta *list, struct list_meta *slice, NODE_TYPE after) {
-	struct node *after_node;
-	after_node=list->head;
-	while (after_node->value != after) {
-		if (after_node == list->tail)
-			after_node = list->head;
-		else
-			after_node = after_node->next;
-	}
+void insert_slice(struct list_meta *list, struct list_meta *slice, struct node *after_node) {
 	slice->tail->next = after_node->next;
 	if (after_node->next != NULL)
 		slice->tail->next->prev = slice->tail;
