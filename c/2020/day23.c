@@ -1,7 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "lib/double_linked_list.h"
-#include "lib/hashtable_ptr.h"
 
 #define TAKE_PER_TURN 3
 #define NUM_CUPS 9
@@ -10,24 +9,24 @@
 #define BIG_NUM_MOVES 10000000
 
 
-void move(struct list_meta *cups, hash_t *lookup, int max_cup);
+void move(struct list_meta *cups, struct node **lookup, int max_cup);
 int calc_target(int current, struct list_meta *slice, int max_cup);
 void print_result(struct list_meta *cups);
-void complete_big_list(struct list_meta *cups, hash_t *lookup);
+void complete_big_list(struct list_meta *cups, struct node **lookup);
 long long product_labels(struct list_meta *cups);
 
 int main(int argc, char *argv[]) {
 	int next, i;
 	struct list_meta *cups = list_create(); 
 	struct list_meta *big_cups = list_create(); 
-	hash_t *node_lookup = hash_new(1.5 * NUM_CUPS);
-	hash_t *big_node_lookup = hash_new(1.5 * BIG_NUM_CUPS);
+	struct node **node_lookup = (struct node **) malloc((NUM_CUPS + 1) * sizeof(struct node *));
+	struct node **big_node_lookup = (struct node **) malloc((BIG_NUM_CUPS + 1) * sizeof(struct node *));
 
 	while ((next = getchar()) != '\n') {
 		push_tail(cups, next - '0');
 		push_tail(big_cups, next - '0');
-		hash_insert(node_lookup, next - '0', cups->tail);
-		hash_insert(big_node_lookup, next - '0', big_cups->tail);
+		node_lookup[next - '0'] = cups->tail;
+		big_node_lookup[next - '0'] = big_cups->tail;
 	}
 
 	for(i=0; i<NUM_MOVES; i++)
@@ -43,12 +42,12 @@ int main(int argc, char *argv[]) {
 	return 0;
 }
 
-void move(struct list_meta *cups, hash_t *lookup, int max_cup) {
+void move(struct list_meta *cups, struct node **lookup, int max_cup) {
 	struct list_meta *slice;
 	int target;
 	slice = slice_after_head(cups, TAKE_PER_TURN);
 	target = calc_target(peek_head(cups), slice, max_cup);
-	insert_slice(cups, slice, hash_lookup(lookup, target));
+	insert_slice(cups, slice, lookup[target]);
 	cycle_fixed(cups, 1);
 }
 
@@ -83,11 +82,11 @@ void print_result(struct list_meta *cups) {
 	printf("\n");
 }
 
-void complete_big_list(struct list_meta *cups, hash_t *lookup) {
+void complete_big_list(struct list_meta *cups, struct node **lookup) {
 	int i;
 	for (i=NUM_CUPS+1; i<=BIG_NUM_CUPS; i++) {
 		push_tail(cups, i);
-		hash_insert(lookup, i, cups->tail);
+		lookup[i] = cups->tail;
 	}
 }
 
