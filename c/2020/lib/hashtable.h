@@ -4,12 +4,13 @@
 
 typedef struct {
 	int size;
-	void **keys;
-	void ***values;
+	char **keys;
+	char **values;
 } hash_t;
 
 unsigned long hash(char *str);
 hash_t *hash_new(int size);
-int hash_index(hash_t *h, void *key, bool *first);
-void hash_insert(hash_t *h, void *key, void *val, int allowed_vals);
-void *hash_lookup(hash_t *h, void *key);
+int hash_index(hash_t *h, char *key);
+void hash_insert(hash_t *h, char *key, char *val);
+char *hash_lookup(hash_t *h, char *key);
+void free_hash(hash_t *h);

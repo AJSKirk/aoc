@@ -23,6 +23,7 @@ NODE_TYPE peek_head(struct list_meta *list);
 NODE_TYPE peek_tail(struct list_meta *list);
 NODE_TYPE pop_head(struct list_meta *list);
 NODE_TYPE pop_tail(struct list_meta *list);
+void free_deck(struct list_meta *deck);
 NODE_TYPE *to_array(struct list_meta *list);
 struct list_meta *copy_list(struct list_meta *src, int depth);
 struct list_meta *slice_after_head(struct list_meta *src, int depth);

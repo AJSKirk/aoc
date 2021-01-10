@@ -73,6 +73,12 @@ NODE_TYPE pop_tail(struct list_meta *list) {
 	return v;
 }
 
+void free_deck(struct list_meta *deck) {
+	while (deck->length > 0)
+		pop_head(deck);
+	free(deck);
+}
+
 NODE_TYPE *to_array(struct list_meta *list) {
 	NODE_TYPE *arr = malloc(list->length * sizeof(NODE_TYPE));
 	int i = 0;
