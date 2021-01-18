@@ -2,14 +2,14 @@ import sys
 from itertools import accumulate
 from typing import List, Tuple
 
-Step = Tuple[int]
+Step = Tuple[int, ...]
 Sequence = List[Step]
 INSTRUCTION_MAP = {'^': (0, 1), '<': (-1, 0), 'v': (0, -1), '>': (1, 0)}
 
 
 def count_houses(instructions: Sequence, num_santas: int = 1) -> int:
-    update = lambda loc, delta: tuple(sum(pair) for pair in zip(loc, delta))  # Works on n dimensions
-    houses = set(((0, 0),))
+    def update(loc, delta): return tuple(sum(pair) for pair in zip(loc, delta))  # Works on n dimensions
+    houses = {(0, 0)}
     for start in range(num_santas):  # Inverting this loop might get better cache performance but real small difference
         houses |= set(accumulate(instructions[start::num_santas], update))
     return len(houses)
