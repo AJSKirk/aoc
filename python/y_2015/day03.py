@@ -1,5 +1,4 @@
 import sys
-from collections import Counter
 from itertools import accumulate
 
 
@@ -8,9 +7,9 @@ INSTRUCTION_MAP = {'^': (0, 1), '<': (-1, 0), 'v': (0, -1), '>': (1, 0)}
 
 def count_houses(instructions: str, num_santas: int = 1) -> int:
     update = lambda loc, delta: tuple(sum(pair) for pair in zip(loc, delta))  # Works on n dimensions
-    houses = Counter(((0, 0),))
+    houses = set(((0, 0),))
     for start in range(num_santas):  # Inverting this loop might get better cache performance but real small difference
-        houses.update(accumulate((INSTRUCTION_MAP[i] for i in instructions[start::num_santas]), update))
+        houses |= set(accumulate((INSTRUCTION_MAP[i] for i in instructions[start::num_santas]), update))
     return len(houses)
 
 
