@@ -23,6 +23,7 @@ struct assignment {
 struct tile tiles[MAX_TILES];
 int *border_counts = NULL;
 struct assignment *map = NULL;
+int dimension;
 
 enum sides {TOP, TOP_F, LEFT, LEFT_F, BOTTOM, BOTTOM_F, RIGHT, RIGHT_F};
 // Clockwise rotations and vertical mirroring
@@ -32,18 +33,21 @@ enum arrangements {ARR_0, ARR_90, ARR_180, ARR_270, ARR_FLIP_0, ARR_FLIP_90, ARR
 void cache_borders(void);
 int binary_value(char *border);
 int num_unmatched_borders(struct tile t, int arrangement);
-void place_tiles(int num_tiles);
-int tile_fits(int i, int j, int dimension, struct tile t, int arrangement);
-int get_targ_unmatched(int i, int j, int dimension);
+char **place_tiles(int num_tiles);
+int tile_fits(int i, int j, struct tile t, int arrangement);
+int get_targ_unmatched(int i, int j);
 int map_complete(int num_tiles);
-char **join_tiles(int dimension);
-char **arrange_grid(char **grid, int size, int arrangement);
+char **join_tiles(void);
+void arrange_grid(char **grid, int size, int arrangement);
 char **grid_to_ptrs(char grid[][TILE_SIZE]);
+int score_roughness(char **map, int size);
 
 int main(int argc, char *argv[]) {
 	char line[TILE_SIZE+2], *next;
-	int i = 0, j;
+	int i = 0, j, arrange;
 	long long corner_mult = 1;
+	char **map, **rot_map;
+	int roughness;
 
 	// For all possible borders, so careful with big tiles (fine here though, 2^8 == 256)
 	border_counts = calloc((int) pow(2, TILE_SIZE), sizeof(int));  // Need to calloc here for dynamic sizing
@@ -73,13 +77,22 @@ int main(int argc, char *argv[]) {
 		i++;
 	}
 
-	place_tiles(i);
-	for (i=0; i<3; i++) {
-		for (j=0; j<3; j++)
-			printf("%d ", tiles[map[i * 3 + j].tile_idx].id);
-		printf("\n");
+	map = place_tiles(i);
+	for (arrange=0; arrange<8; arrange++) {
+		rot_map = (char **) malloc(dimension * (TILE_SIZE - 2) * sizeof(char *));
+		for (i=0; i<dimension * (TILE_SIZE - 2); i++) {
+			rot_map[i] = (char *) malloc(dimension * (TILE_SIZE - 2) * sizeof(char));
+			strncpy(rot_map[i], map[i], dimension * (TILE_SIZE - 2));
+		}
+
+
+		arrange_grid(rot_map, dimension * (TILE_SIZE - 2), arrange);
+		printf("%d\n", score_roughness(rot_map, dimension * (TILE_SIZE - 2)));
+
+		for (i=0; i<dimension * (TILE_SIZE - 2); i++)
+			free(rot_map[i]);
+		free(rot_map);
 	}
-	char **b = join_tiles(3);
 
 	printf("%lld\n", corner_mult);
 
@@ -145,8 +158,8 @@ int num_unmatched_borders(struct tile t, int arrangement) {
 	return count;
 }
 
-void place_tiles(int num_tiles) {
-	int dimension = (int) sqrt(num_tiles);  // Assumes square map (true for our input)
+char **place_tiles(int num_tiles) {
+	dimension = (int) sqrt(num_tiles);  // Assumes square map (true for our input)
 	int i, j, cand;
 	int targ_unmatched, arrangement;
 	int arr_start, start_seed = 0;
@@ -162,7 +175,7 @@ void place_tiles(int num_tiles) {
 
 		for (i=0; i<dimension; i++) {
 			for (j=0; j<dimension; j++) {
-				targ_unmatched = get_targ_unmatched(i, j, dimension);
+				targ_unmatched = get_targ_unmatched(i, j);
 				for (cand=0; cand<num_tiles; cand++) {
 					if (map[i * dimension + j].tile_idx != -1)
 						break;
@@ -170,7 +183,7 @@ void place_tiles(int num_tiles) {
 						arr_start = (i == 0 && j == 0) ? start_seed : 0;
 						for (arrangement=arr_start; arrangement<8; arrangement++) {
 							if (targ_unmatched == num_unmatched_borders(tiles[cand], arrangement) &&
-									tile_fits(i, j, dimension, tiles[cand], arrangement)) {
+									tile_fits(i, j, tiles[cand], arrangement)) {
 								map[i * dimension + j].tile_idx = cand;
 								map[i * dimension + j].arrangement = arrangement;
 								tiles[cand].placed = 1;
@@ -183,6 +196,8 @@ void place_tiles(int num_tiles) {
 		}
 	start_seed++;
 	} while(!map_complete(num_tiles));
+
+	return join_tiles();
 }
 
 int map_complete(int num_tiles) {
@@ -193,7 +208,7 @@ int map_complete(int num_tiles) {
 	return 1;
 }
 
-int get_targ_unmatched(int i, int j, int dimension) {
+int get_targ_unmatched(int i, int j) {
 	if ((i == j && j == 0) || (i == j && j == dimension - 1) || (i == 0 && j == dimension - 1) || (i == dimension - 1 && j == 0))
 		return 2;
 	else if (i == 0 || j == 0 || i == dimension - 1 || j == dimension - 1)
@@ -202,7 +217,7 @@ int get_targ_unmatched(int i, int j, int dimension) {
 		return 0;
 }
 
-int tile_fits(int i, int j, int dimension, struct tile t, int arrangement) {
+int tile_fits(int i, int j, struct tile t, int arrangement) {
 	// Note encoding order - Neighbour n[k] has border index k (TOP-LEFT-BOTTOM-RIGHT) facing target
 	int neighbours[4][2] = {{i + 1, j}, {i, j + 1}, {i - 1, j}, {i, j - 1}};
 	int k;
@@ -224,7 +239,7 @@ int tile_fits(int i, int j, int dimension, struct tile t, int arrangement) {
 	return 1;  // Everything passed
 }
 
-char **join_tiles(int dimension) {
+char **join_tiles(void) {
 	char **borderless_map = (char **) malloc(dimension * (TILE_SIZE - 2) * sizeof(char *));
 	int row, col, tile_row, tile_col, row_of_tile;
 	char **rotated_grid;
@@ -240,7 +255,7 @@ char **join_tiles(int dimension) {
 			for (tile_col=0; tile_col<dimension; tile_col++) {
 				tile_assignment = map[tile_row * dimension + tile_col];
 				rotated_grid = grid_to_ptrs(tiles[tile_assignment.tile_idx].grid);
-				rotated_grid = arrange_grid(rotated_grid, TILE_SIZE, tile_assignment.arrangement);
+				arrange_grid(rotated_grid, TILE_SIZE, tile_assignment.arrangement);
 				strncpy(&borderless_map[row][tile_col * (TILE_SIZE - 2)], &rotated_grid[row_of_tile][1], TILE_SIZE - 2);
 				free(rotated_grid);
 			}
@@ -261,7 +276,7 @@ char **grid_to_ptrs(char grid[][TILE_SIZE]) {
 	return out;
 }
 
-char **arrange_grid(char **grid, int size, int arrangement) {
+void arrange_grid(char **grid, int size, int arrangement) {
 	int flip = arrangement / 4;
 	int rotations = arrangement % 4;
 	int i, j;
@@ -287,6 +302,38 @@ char **arrange_grid(char **grid, int size, int arrangement) {
 			for (j=0; j<size; j++)
 				grid[i][j] = newgrid[i][j];
 	}
+}
 
-	return grid;
+int check_monster(char **map, int row, int col) {
+	char monster[3][20] = {"..................#.", "#....##....##....###", ".#..#..#..#..#..#..."};
+	int i, j;
+
+	for (i=0; i<3; i++)
+		for (j=0; j<20; j++)
+			if (monster[i][j] == '#' && map[row + i][col + j] != '#')
+				return 0;
+
+	return 1;
+}
+
+int count_monsters(char **map, int size) {
+	int i, j;
+	int monsters = 0;
+
+	for (i=0; i<size - 2; i++)
+		for (j=0; j<size - 19; j++)
+			monsters += check_monster(map, i, j);
+
+	return monsters;
+}
+
+int score_roughness(char **map, int size) {
+	int hashes = 0;
+	int i, j;
+
+	for (i=0; i<size; i++)
+		for (j=0; j<size; j++)
+			hashes += (map[i][j] == '#');
+
+	return hashes - 15 * count_monsters(map, size);
 }
