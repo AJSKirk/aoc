@@ -231,17 +231,19 @@ char **join_tiles(int dimension) {
 	struct assignment tile_assignment;
 
 
+
+
 	for (tile_row=0; tile_row<dimension; tile_row++) {
-		for (tile_col=0; tile_col<dimension; tile_col++) {
-			tile_assignment = map[tile_row * dimension + tile_col];
-			rotated_grid = grid_to_ptrs(tiles[tile_assignment.tile_idx].grid);
-			rotated_grid = arrange_grid(rotated_grid, TILE_SIZE, tile_assignment.arrangement);
-			for (row_of_tile=1; row_of_tile<TILE_SIZE-1; row_of_tile++) {
-				row = tile_row * (TILE_SIZE - 2) + row_of_tile - 1;
-				borderless_map[row] = (char *) malloc(dimension * (TILE_SIZE - 2) * sizeof(char));
+		for (row_of_tile=1; row_of_tile<TILE_SIZE-1; row_of_tile++) {
+			row = tile_row * (TILE_SIZE - 2) + row_of_tile - 1;
+			borderless_map[row] = (char *) malloc(dimension * (TILE_SIZE - 2) * sizeof(char));
+			for (tile_col=0; tile_col<dimension; tile_col++) {
+				tile_assignment = map[tile_row * dimension + tile_col];
+				rotated_grid = grid_to_ptrs(tiles[tile_assignment.tile_idx].grid);
+				rotated_grid = arrange_grid(rotated_grid, TILE_SIZE, tile_assignment.arrangement);
 				strncpy(&borderless_map[row][tile_col * (TILE_SIZE - 2)], &rotated_grid[row_of_tile][1], TILE_SIZE - 2);
+				free(rotated_grid);
 			}
-			free(rotated_grid);
 		}
 	}
 
