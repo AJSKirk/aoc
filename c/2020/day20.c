@@ -24,13 +24,9 @@ struct tile tiles[MAX_TILES];
 int *border_counts = NULL;
 struct assignment *map = NULL;
 
-int FLIP_X[2][2] = {{1, 0}, {0, -1}};
-int FLIP_Y[2][2] = {{-1, 0}, {0, 1}};
-int ROT_90[2][2] = {{0, -1}, {1, 0}};  // Counterclockwise rotation
-int ROT_180[2][2] = {{-1, 0}, {0, -1}};
-int ROT_270[2][2] = {{0, 1}, {-1, 0}};
-
 enum sides {TOP, TOP_F, LEFT, LEFT_F, BOTTOM, BOTTOM_F, RIGHT, RIGHT_F};
+// Clockwise rotations and vertical mirroring
+enum arrangements {ARR_0, ARR_90, ARR_180, ARR_270, ARR_FLIP_0, ARR_FLIP_90, ARR_FLIP_180, ARR_FLIP_270};
 
 
 void cache_borders(void);
@@ -40,6 +36,9 @@ void place_tiles(int num_tiles);
 int tile_fits(int i, int j, int dimension, struct tile t, int arrangement);
 int get_targ_unmatched(int i, int j, int dimension);
 int map_complete(int num_tiles);
+char **join_tiles(int dimension);
+char **arrange_grid(char **grid, int size, int arrangement);
+char **grid_to_ptrs(char grid[][TILE_SIZE]);
 
 int main(int argc, char *argv[]) {
 	char line[TILE_SIZE+2], *next;
@@ -73,11 +72,14 @@ int main(int argc, char *argv[]) {
 			}
 		i++;
 	}
+
 	place_tiles(i);
-	int num_tiles = i;
-	for (i=0; i<num_tiles; i++) {
-		printf("%d\n", tiles[map[i].tile_idx].id);
+	for (i=0; i<3; i++) {
+		for (j=0; j<3; j++)
+			printf("%d ", tiles[map[i * 3 + j].tile_idx].id);
+		printf("\n");
 	}
+	char **b = join_tiles(3);
 
 	printf("%lld\n", corner_mult);
 
@@ -220,4 +222,69 @@ int tile_fits(int i, int j, int dimension, struct tile t, int arrangement) {
 			return 0;
 	}
 	return 1;  // Everything passed
+}
+
+char **join_tiles(int dimension) {
+	char **borderless_map = (char **) malloc(dimension * (TILE_SIZE - 2) * sizeof(char *));
+	int row, col, tile_row, tile_col, row_of_tile;
+	char **rotated_grid;
+	struct assignment tile_assignment;
+
+
+	for (tile_row=0; tile_row<dimension; tile_row++) {
+		for (tile_col=0; tile_col<dimension; tile_col++) {
+			tile_assignment = map[tile_row * dimension + tile_col];
+			rotated_grid = grid_to_ptrs(tiles[tile_assignment.tile_idx].grid);
+			rotated_grid = arrange_grid(rotated_grid, TILE_SIZE, tile_assignment.arrangement);
+			for (row_of_tile=1; row_of_tile<TILE_SIZE-1; row_of_tile++) {
+				row = tile_row * (TILE_SIZE - 2) + row_of_tile - 1;
+				borderless_map[row] = (char *) malloc(dimension * (TILE_SIZE - 2) * sizeof(char));
+				strncpy(&borderless_map[row][tile_col * (TILE_SIZE - 2)], &rotated_grid[row_of_tile][1], TILE_SIZE - 2);
+			}
+			free(rotated_grid);
+		}
+	}
+
+	return borderless_map;
+}
+
+char **grid_to_ptrs(char grid[][TILE_SIZE]) {
+	char **out = (char **) malloc(TILE_SIZE * sizeof(char *));
+	int i;
+
+	for (i=0; i<TILE_SIZE; i++) {
+		out[i] = malloc(TILE_SIZE * sizeof(char));
+		strncpy(out[i], grid[i], TILE_SIZE);
+	}
+	return out;
+}
+
+char **arrange_grid(char **grid, int size, int arrangement) {
+	int flip = arrangement / 4;
+	int rotations = arrangement % 4;
+	int i, j;
+
+	char newgrid[size][size];
+	char row[size];  // Temporary storage for flip
+
+	if (flip) {
+		for (i=0; i<size; i++) {
+			for (j=0; j<size; j++)
+				row[j] = grid[i][size - 1 - j];
+			for (j=0; j<size; j++)
+				grid[i][j] = row[j];
+		}
+	}
+
+	for (; rotations > 0; rotations--) {
+		for (i=0; i<size; i++)
+			for (j=0; j<size; j++)
+				newgrid[i][j] = grid[j][size - 1 - i];
+
+		for (i=0; i<size; i++)
+			for (j=0; j<size; j++)
+				grid[i][j] = newgrid[i][j];
+	}
+
+	return grid;
 }
