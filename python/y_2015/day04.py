@@ -1,6 +1,7 @@
 import sys
 import itertools
 from hashlib import md5
+import multiprocessing
 
 
 def compute_hash(secret_key: str, addendum: int) -> str:
@@ -8,10 +9,27 @@ def compute_hash(secret_key: str, addendum: int) -> str:
     return md5(guess.encode()).hexdigest()
 
 
-def crack_hash(secret_key, leading_zeroes, start: int = 0) -> int:
+def crack_worker(secret_key, leading_zeroes, start, step, result):
     target = '0' * leading_zeroes
-    return next(addendum for addendum in itertools.count(start)
-                if compute_hash(secret_key, addendum).startswith(target))
+    result.put(next(addendum for addendum in itertools.count(start, step)
+                    if compute_hash(secret_key, addendum).startswith(target)))
+
+
+def crack_hash(secret_key, leading_zeroes, start=0) -> int:
+    result = multiprocessing.Queue()
+    num_cores = multiprocessing.cpu_count()
+    threads = [multiprocessing.Process(target=crack_worker,
+                                       args=(secret_key, leading_zeroes, start + step, num_cores, result))
+               for step in range(num_cores)]
+
+    for thread in threads:
+        thread.start()
+
+    out = result.get()
+    for thread in threads:
+        thread.terminate()
+
+    return out
 
 
 def main():
