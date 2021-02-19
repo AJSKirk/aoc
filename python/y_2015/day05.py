@@ -3,12 +3,12 @@ import sys
 from typing import Tuple
 
 
-TEST_SETS = ((r"(.*[aeiou]){3}",  # Three vowels with anything in between
-              r".*(.)\1",  # Repeated letter
+TEST_SETS = ((r"(.*[aeiou]){3}",        # Three vowels with anything in between
+              r".*(.)\1",               # Repeated letter
               r"(?!.*(ab|cd|pq|xy))"),  # No naughty pairs anywhere
 
-             (r".*(..).*\1",
-              r".*(.).\1"))
+             (r".*(.{2}).*\1",          # Repeated pair
+              r".*(.).\1"))             # Repeated letter with single char in middle
 
 
 def is_nice(candidate: str, tests: Tuple[str, ...]) -> bool:
