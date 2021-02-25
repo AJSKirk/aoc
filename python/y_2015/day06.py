@@ -1,7 +1,8 @@
-from typing import Tuple, List
+from typing import List
 import re
 import sys
 from collections import namedtuple
+from itertools import product
 
 
 Vector = namedtuple('Vector', ['x', 'y'])
@@ -25,9 +26,8 @@ def main():
     with open(sys.argv[1], 'r') as f:
         for line in f:
             op, corners = parse(line)
-            for row in range(corners[0].x, corners[1].x + 1):
-                for col in range(corners[0].y, corners[1].y + 1):
-                    grid[row][col] = op(grid[row][col])
+            for row, col in product(range(corners[0].x, corners[1].x + 1), range(corners[0].y, corners[1].y + 1)):
+                grid[row][col] = op(grid[row][col])
 
     print(sum(sum(col for col in row) for row in grid))
 
