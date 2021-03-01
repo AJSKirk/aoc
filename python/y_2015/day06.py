@@ -24,7 +24,7 @@ def parse(line: str, op_set: Dict) -> (Callable, List[Vector]):
     return op_set[op], corners
 
 
-def simulate(instructions: Iterable[str], op_set: Dict, dtype=np.byte):
+def simulate(instructions: Iterable[str], op_set: Dict, dtype=np.uint8):
     """Runs simulation. Dtype ended up being unnecessary since all values can be done in a single byte,
     but retained for future extensibility"""
     grid = np.zeros(tuple(N_DIM for _ in range(DIMS)), dtype)
