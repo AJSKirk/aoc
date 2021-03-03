@@ -39,7 +39,7 @@ class Wire:
 def parse(line: str, op_set: Dict, circuit: Circuit) -> (str, Wire):
     left, opcode, right, dest = re.match(r"([a-z0-9]*) ?([A-Z]*) ?([a-z0-9]*) -> (.+)", line).groups()
 
-    return dest, Wire(OPERATIONS[opcode], (left, right), circuit)
+    return dest, Wire(op_set[opcode], (left, right), circuit)
 
 
 def main():
@@ -54,7 +54,7 @@ def main():
     # Reset circuit and override B val to the Part 1 answer
     for wire in circuit.values():
         wire.reset()
-    circuit['b']._value = short_val
+    circuit['b'] = Wire(OPERATIONS[''], (str(short_val),), circuit)
 
     print("Part 2 Value: {}".format(circuit['a'].value))
 
