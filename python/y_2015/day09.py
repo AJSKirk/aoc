@@ -1,15 +1,13 @@
 import sys
 import re
-import math
 import itertools
+import functools
 from collections import defaultdict
-from typing import Tuple, List, Iterable, Set
-
-# Naive approach was getting 400ms to benchmark
+from typing import List
 
 
 class UndirectedGraph(defaultdict):
-    """Extends dict to automatically handle pairs of points regardless of order, and handle invalid links"""
+    """Extends dict to easily implement bidirectional links with efficient lookups"""
     def __init__(self):
         super().__init__(dict)
 
@@ -23,22 +21,16 @@ def parse(line: str) -> (List[str], int):
     return points, int(distance)
 
 
-def held_karp():
-    pass
+def held_karp(graph):
+    """Memoized recursive implementation of the Held-Karp algorithm by leveraging graph subset solutions"""
+    @functools.lru_cache(maxsize=None)
+    def subset_cost(subset, final):
+        assert final in subset
+        if len(subset) == 1:
+            return 0
+        return min(subset_cost(subset - frozenset((final,)), opt) + graph[opt][final] for opt in subset if opt != final)
 
-
-def lin_kernighan():
-    pass
-
-
-def naive(graph: UndirectedGraph, visited, distance=0):
-    if len(visited) == len(graph):  # Recursion base case
-        return distance
-
-    current = visited[-1]
-    options = (opt for opt in graph[current].keys() if opt not in visited)
-
-    return min(naive(graph, visited + (option,), distance + graph[current][option]) for option in options)
+    return min(subset_cost(frozenset(graph.keys()), node) for node in graph.keys())
 
 
 def main():
@@ -47,7 +39,7 @@ def main():
         for line in f:
             graph.add_link(*parse(line))
 
-    print(min(naive(graph, (start,)) for start in graph.keys()))
+    print("Shortest Path: {}".format(held_karp(graph)))
 
 
 if __name__ == "__main__":
