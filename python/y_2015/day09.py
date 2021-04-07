@@ -21,16 +21,16 @@ def parse(line: str) -> (List[str], int):
     return points, int(distance)
 
 
-def held_karp(graph):
+def held_karp(graph, compar=min):
     """Memoized recursive implementation of the Held-Karp algorithm by leveraging graph subset solutions"""
     @functools.lru_cache(maxsize=None)
     def subset_cost(subset, final):
         assert final in subset
         if len(subset) == 1:
             return 0
-        return min(subset_cost(subset - frozenset((final,)), opt) + graph[opt][final] for opt in subset if opt != final)
+        return compar(subset_cost(subset - frozenset((final,)), opt) + graph[opt][final] for opt in subset if opt != final)
 
-    return min(subset_cost(frozenset(graph.keys()), node) for node in graph.keys())
+    return compar(subset_cost(frozenset(graph.keys()), node) for node in graph.keys())
 
 
 def main():
@@ -40,6 +40,7 @@ def main():
             graph.add_link(*parse(line))
 
     print("Shortest Path: {}".format(held_karp(graph)))
+    print("Longest Path:  {}".format(held_karp(graph, max)))
 
 
 if __name__ == "__main__":
