@@ -1,6 +1,7 @@
 import sys
 from typing import List
 from collections import namedtuple
+import numpy as np
 
 
 # Elements taken from http://www.se16.info/js/lands2.htm
@@ -101,38 +102,35 @@ ELEMENTS = (("H", "H", "22"),
 Element = namedtuple('Element', ["number", "children", "literal", "length"])
 
 
-def literal_to_element(s: str) -> str:
+def literal_to_element(s: str) -> (int, str):
     """Takes a numeric string and returns the elemental name for it. Raises an error if s is not a single element"""
     assert s.isnumeric()
-    for element, children, literal in ELEMENTS:
+    for idx, (element, children, literal) in enumerate(ELEMENTS):
         if literal == s:
-            return element
+            return idx, element
 
     raise ValueError("Literal is not an element")
 
 
-def create_elements_dict():
-    out = {}
-    for idx, (element, children, literal) in enumerate(ELEMENTS):
-        out[element] = Element(idx, children.split(), literal, len(literal))
-    return out
-
-
-def decay(compound: List[str], elements_dict) -> List[str]:
-    return [c for el in compound for c in elements_dict[el].children]
+def create_matrices():
+    """Generate one-step transition matrix and matrix of element lengths"""
+    transition = np.array([[children.split().count(ELEMENTS[idx][0]) for idx in range(len(ELEMENTS))]
+                           for element, children, literal in ELEMENTS], dtype=np.uint64).T
+    lengths = np.array([len(literal) for element, children, literal in ELEMENTS])
+    return transition, lengths
 
 
 def main():
     with open(sys.argv[1], 'r') as f:
         start_str = f.read().strip()
-    start_literal = literal_to_element(start_str)
+    start_idx, start_element = literal_to_element(start_str)
+    start_vec = np.array([idx == start_idx for idx in range(len(ELEMENTS))], dtype=np.uint64)
 
-    elements_dict = create_elements_dict()
-    compound = [start_literal]
-    for _ in range(50):
-        compound = decay(compound, elements_dict)
+    transition, lengths = create_matrices()
 
-    print(sum(elements_dict[el].length for el in compound))
+    for steps in (40, 50):
+        full_transition = np.linalg.matrix_power(transition, steps)
+        print("Length After {} Steps: {:>7}".format(steps, int(full_transition.dot(start_vec).dot(lengths))))
 
 
 if __name__ == "__main__":
