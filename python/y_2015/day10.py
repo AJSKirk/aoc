@@ -115,7 +115,7 @@ def literal_to_element(s: str) -> (int, str):
 def create_matrices():
     """Generate one-step transition matrix and matrix of element lengths"""
     transition = np.array([[children.split().count(ELEMENTS[idx][0]) for idx in range(len(ELEMENTS))]
-                           for element, children, literal in ELEMENTS], dtype=np.uint64).T
+                           for element, children, literal in ELEMENTS], dtype=np.uint64)
     lengths = np.array([len(literal) for element, children, literal in ELEMENTS])
     return transition, lengths
 
@@ -130,7 +130,7 @@ def main():
 
     for steps in (40, 50):
         full_transition = np.linalg.matrix_power(transition, steps)
-        print("Length After {} Steps: {:>7}".format(steps, int(full_transition.dot(start_vec).dot(lengths))))
+        print("Length After {} Steps: {:>7}".format(steps, int(start_vec.dot(full_transition).dot(lengths))))
 
 
 if __name__ == "__main__":
