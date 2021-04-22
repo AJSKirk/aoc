@@ -4,10 +4,7 @@ from typing import List
 
 
 def is_valid(cand: str) -> bool:
-    has_repeats = re.match(r'.*((.)\2.*){2}', cand)
-    no_invalids = not re.match(r'.*[iol]', cand)
-
-    if not all((has_repeats, no_invalids)):
+    if not re.match(r'.*((.)\2.*){2}', cand):
         return False
 
     values = list(map(ord, cand))
