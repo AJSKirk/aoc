@@ -4,8 +4,9 @@ program day01
     character(len=32) :: filename
     integer :: ios
     integer :: nvalues
+    integer :: i
     integer, dimension(256) :: mass
-    integer, dimension(256) :: fuels
+    integer, dimension(64,256) :: fuels
 
     ! Read in file
     call getarg(1, filename)
@@ -21,7 +22,14 @@ program day01
     nvalues = nvalues - 1
     close(1)
 
-    fuels = mass / 3 - 2
-    print *, 'Total fuel required: ', sum(fuels(1:nvalues))
+    fuels(1,:) = mass / 3 - 2
+
+    do i=2,64
+        fuels(i,:) = max(fuels(i-1,:) / 3 - 2, 0)
+        if (sum(fuels(i,:)) == 0) exit
+    end do
+
+    print *, 'Naive fuel required: ', sum(fuels(1,1:nvalues))
+    print *, 'Total fuel required: ', sum(fuels(1:i,1:nvalues))
 
 end program day01
