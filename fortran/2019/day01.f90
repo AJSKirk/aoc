@@ -10,7 +10,7 @@ program day01
     integer, dimension(max_modules) :: mass
     integer, dimension(max_modules,max_iters) :: fuels
 
-    call read_stdin(mass, nvalues, max_modules)
+    call read_stdin(mass, nvalues)
 
     ! Solve Part 1
     fuels(:,1) = mass / 3 - 2
@@ -24,14 +24,13 @@ program day01
     print *, 'Naive fuel required: ', sum(fuels(1:nvalues,1))
     print *, 'Total fuel required: ', sum(fuels(1:nvalues,:i))
 
-end program day01
+contains
 
-subroutine read_stdin(mass, nvalues, max_modules)
+subroutine read_stdin(mass, nvalues)
     use, intrinsic :: iso_fortran_env, only : input_unit
     implicit none
 
-    integer, intent(in) :: max_modules
-    integer, intent(out) :: mass(max_modules)
+    integer, intent(in out) :: mass(:)
     integer, intent(out) :: nvalues
 
     integer :: ios
@@ -44,3 +43,5 @@ subroutine read_stdin(mass, nvalues, max_modules)
     end do
     nvalues = nvalues - 1
 end subroutine read_stdin
+
+end program day01
