@@ -2,7 +2,8 @@ import sys
 import re
 from collections import defaultdict
 import itertools
-from typing import Iterable, List
+from typing import List
+import functools
 
 
 class UndirectedGraph(defaultdict):
@@ -15,13 +16,6 @@ class UndirectedGraph(defaultdict):
             self[src][dst] += value
 
 
-def score(ordering: List[str], relationships: UndirectedGraph):
-    assert len(ordering) == len(relationships)
-    # Neat trick for periodic BCs
-    pairs = itertools.zip_longest(ordering, ordering[1:], fillvalue=ordering[0])
-    return sum(relationships[l][r] for l, r in pairs)
-
-
 def parse(line: str, relationships: UndirectedGraph):
     pattern = re.compile(r'(\w+) would (\w+) (\d+) happiness units by sitting next to (\w+).')
     subject, sign, magnitude, target = re.match(pattern, line).groups()
@@ -30,9 +24,19 @@ def parse(line: str, relationships: UndirectedGraph):
     relationships.update_link((subject, target), value)
 
 
-def brute_force_solve(relationships):
-    people = relationships.keys()
-    return max(score(ordering, relationships) for ordering in itertools.permutations(people))
+def held_karp(graph, compar=min):
+    """Going around the table *is the travelling salesman problem*. Slight modification to Day 9 solution to handle
+    the perdiodic boundary conditions"""
+    @functools.lru_cache(maxsize=None)
+    def subset_cost(subset, final):
+        assert final in subset
+        if len(subset) == 1:
+            return graph[start][final]
+        return compar(subset_cost(subset - frozenset((final,)), opt) + graph[opt][final] for opt in subset if opt != final)
+
+    start = list(graph.keys())[0]
+    interior = frozenset(graph.keys()) - frozenset((start,))
+    return compar(subset_cost(interior, final) + graph[final][start] for final in interior)
 
 
 def main():
@@ -41,9 +45,9 @@ def main():
         for line in f:
             parse(line, relationships)
 
-    print(brute_force_solve(relationships))
+    print(held_karp(relationships, compar=max))
     relationships['Host']  # Sneaky - Initialises host in relationships.keys()
-    print(brute_force_solve(relationships))
+    print(held_karp(relationships, compar=max))
 
 
 if __name__ == '__main__':
