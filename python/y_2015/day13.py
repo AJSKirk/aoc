@@ -4,19 +4,19 @@ import re
 from day09 import UndirectedGraph, held_karp
 
 
-def parse(line: str, relationships: UndirectedGraph):
+def parse(line: str):
     pattern = re.compile(r'(\w+) would (\w+) (\d+) happiness units by sitting next to (\w+).')
     subject, sign, magnitude, target = re.match(pattern, line).groups()
     assert sign in ('gain', 'lose')
     value = int(magnitude) * (1 if sign == 'gain' else -1)
-    relationships.increment_link((subject, target), value)
+    return (subject, target), value
 
 
 def main():
     relationships = UndirectedGraph()
     with open(sys.argv[1], 'r') as f:
         for line in f:
-            parse(line, relationships)
+            relationships.increment_link(*parse(line))
 
     print(held_karp(relationships, compar=max))
     relationships['Host']  # Sneaky - Initialises host in relationships.keys()
