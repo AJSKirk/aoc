@@ -9,11 +9,11 @@ from typing import List
 class UndirectedGraph(defaultdict):
     """Extends dict to easily implement bidirectional links with efficient lookups"""
     def __init__(self):
-        super().__init__(dict)
+        super().__init__(lambda: defaultdict(int))
 
-    def add_link(self, keys, value):
+    def increment_link(self, keys, value):
         for src, dst in itertools.permutations(keys):
-            self[src][dst] = value
+            self[src][dst] += value
 
 
 def parse(line: str) -> (List[str], int):
@@ -27,18 +27,21 @@ def held_karp(graph, compar=min):
     def subset_cost(subset, final):
         assert final in subset
         if len(subset) == 1:
-            return 0
+            return graph[start][final]
         return compar(subset_cost(subset - frozenset((final,)), opt) + graph[opt][final] for opt in subset if opt != final)
 
-    return compar(subset_cost(frozenset(graph.keys()), node) for node in graph.keys())
+    start = list(graph.keys())[0]
+    interior = frozenset(graph.keys()) - frozenset((start,))
+    return compar(subset_cost(interior, final) + graph[final][start] for final in interior)
 
 
 def main():
     graph = UndirectedGraph()
     with open(sys.argv[1], 'r') as f:
         for line in f:
-            graph.add_link(*parse(line))
+            graph.increment_link(*parse(line))
 
+    graph[None]  # Sneaky - Wire a costless path to all other nodes - allows to start and end at different nodes
     print("Shortest Path: {}".format(held_karp(graph)))
     print("Longest Path:  {}".format(held_karp(graph, max)))
 

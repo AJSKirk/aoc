@@ -1,19 +1,7 @@
 import sys
 import re
-from collections import defaultdict
-import itertools
-from typing import List
-import functools
-
-
-class UndirectedGraph(defaultdict):
-    """Extends dict to easily implement bidirectional links with efficient lookups"""
-    def __init__(self):
-        super().__init__(lambda: defaultdict(int))
-
-    def update_link(self, keys, value):
-        for src, dst in itertools.permutations(keys):
-            self[src][dst] += value
+# This is just the Travelling Salesman Problem, which we've already solved!
+from day09 import UndirectedGraph, held_karp
 
 
 def parse(line: str, relationships: UndirectedGraph):
@@ -21,22 +9,7 @@ def parse(line: str, relationships: UndirectedGraph):
     subject, sign, magnitude, target = re.match(pattern, line).groups()
     assert sign in ('gain', 'lose')
     value = int(magnitude) * (1 if sign == 'gain' else -1)
-    relationships.update_link((subject, target), value)
-
-
-def held_karp(graph, compar=min):
-    """Going around the table *is the travelling salesman problem*. Slight modification to Day 9 solution to handle
-    the perdiodic boundary conditions"""
-    @functools.lru_cache(maxsize=None)
-    def subset_cost(subset, final):
-        assert final in subset
-        if len(subset) == 1:
-            return graph[start][final]
-        return compar(subset_cost(subset - frozenset((final,)), opt) + graph[opt][final] for opt in subset if opt != final)
-
-    start = list(graph.keys())[0]
-    interior = frozenset(graph.keys()) - frozenset((start,))
-    return compar(subset_cost(interior, final) + graph[final][start] for final in interior)
+    relationships.increment_link((subject, target), value)
 
 
 def main():
