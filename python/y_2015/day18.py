@@ -19,7 +19,7 @@ def parse(file: Union[IO, str]) -> Grid:
     return grid
 
 
-def step(grid):
+def step(grid: Grid) -> Grid:
     tot = sum(np.roll(grid, shift, axis=(0, 1)) for shift in filter(any, itertools.product(range(-1, 2), repeat=2)))
     grid[grid & ~np.isin(tot, (2, 3))] = False
     grid[~grid & (tot == 3)] = True
