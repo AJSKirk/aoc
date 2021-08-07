@@ -12,7 +12,7 @@ Grid = np.ndarray
 def parse(file: Union[IO, str]) -> Grid:
     """Parse file into 2D boolean numpy array"""
     raw = np.fromfile(file, sep='', dtype=np.byte)
-    grid = (raw[raw != ord('\n')] - ord('.')).astype(np.bool)  # Remove newlines and cast to bool
+    grid = (raw[raw != ord('\n')] - ord('.')).astype(bool)  # Remove newlines and cast to bool
     # Reshape and halo
     grid = grid.reshape(int(np.sqrt(grid.size)), -1)
     grid = np.pad(grid, ((1, 1), (1, 1)), constant_values=0)
@@ -28,14 +28,29 @@ def step(grid: Grid) -> Grid:
     return grid
 
 
+def force_corners(grid: Grid) -> Grid:
+    for corner in itertools.product((-2, 1), repeat=2):  # Account for Halo
+        grid[corner] = True
+    return grid
+
+
 def main():
     with open(sys.argv[1], 'r') as f:
         grid = parse(f)
 
+    forced_grid = grid.copy()
+
     for _ in range(NUM_STEPS):
         grid = step(grid)
 
-    print(np.sum(grid))
+    print("Lights on: {}".format(np.sum(grid)))
+
+    for _ in range(NUM_STEPS):
+        forced_gridgrid = force_corners(forced_grid)
+        forced_grid = step(forced_grid)
+
+    forced_grid = force_corners(forced_grid)
+    print("Lights on with forcing: {}".format(np.sum(forced_grid)))
 
 
 if __name__ == "__main__":
