@@ -1,8 +1,6 @@
 import sys
 from typing import Generator, Iterable
 
-INSTRUCTION_MAP = {'(': 1, ')': -1}
-
 
 def depth_increases(depths: Iterable[int]) -> int:
     return sum(y > x for x, y in zip(depths[:-1], depths[1:]))
