@@ -7,7 +7,7 @@ Elf = namedtuple("Elf", ["fr", "to"])
 Pair: Tuple[Elf, Elf]
 
 
-def parse_line(line:str):
+def parse_line(line: str):
     elves = line.strip().split(',')
     return tuple(Elf(*(int(i) for i in elf.split('-'))) for elf in elves)
 

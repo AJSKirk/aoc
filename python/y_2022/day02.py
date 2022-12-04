@@ -1,7 +1,5 @@
 import fileinput
 from enum import Enum
-from typing import Dict
-from itertools import cycle
 
 PLAYS = Enum('PLAYS', ['ROCK', 'PAPER', 'SCISSORS'])
 
