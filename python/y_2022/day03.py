@@ -1,4 +1,5 @@
 import fileinput
+from typing import Iterable
 
 
 def priority(item: str) -> int:
@@ -10,23 +11,21 @@ def priority(item: str) -> int:
 
 def find_duplicate(backpack: str) -> str:
     halfway = len(backpack) // 2
-    dupe = set(item for item in backpack[:halfway] if item in backpack[halfway:])
-    assert len(dupe) == 1
-    return dupe.pop()
+    return find_common_element((backpack[:halfway], backpack[halfway:]))
 
 
 def slicer(xs, slice_length):
     return (xs[i:i+slice_length] for i in range(0, len(xs), slice_length))
 
 
-def find_badges(backpacks) -> str:
-    return set.intersection(*(set(b) for b in backpacks)).pop()  # Neat little one-liner
+def find_common_element(containers: Iterable[str]) -> str:
+    return set.intersection(*(set(c) for c in containers)).pop()  # Neat little one-liner
 
 
 def main():
     backpacks = [line.strip() for line in fileinput.input()]
     print(sum(priority(find_duplicate(b)) for b in backpacks))
-    print(sum(priority(find_badges(bs)) for bs in slicer(backpacks, 3)))
+    print(sum(priority(find_common_element(bs)) for bs in slicer(backpacks, 3)))
 
 
 if __name__ == "__main__":
