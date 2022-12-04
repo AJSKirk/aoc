@@ -13,10 +13,12 @@ def parse_line(line: str):
 
 
 def check_overlaps(pair, partial=False) -> bool:
+    # over = candidate overlapping set, under = candidate overlapped set
     for idx, over in enumerate(pair):
         under = pair[(idx + 1) % len(pair)]
         if over.fr <= under.fr and over.to >= under.to:
             return True
+        # Check partial overlaps - only need to check one direction as the other will be checked on the next loop iter
         if partial and (over.fr <= under.fr) and (over.to >= under.fr):
             return True
 
