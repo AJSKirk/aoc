@@ -34,12 +34,18 @@ def build_stacks(input) -> List[Stack]:
 
 
 def execute_instruction(stacks: List[Stack], inst: Instruction) -> None:  # Mutates stacks, no return
-    pass
+    for _ in range(inst.amt):
+        stacks[inst.to - 1].append(stacks[inst.fr - 1].pop())
 
 
 def main():
     with fileinput.input() as input:
         stacks = build_stacks(input)
+        input.readline()  # Clear blank line
+        for line in input:
+            execute_instruction(stacks, parse_instruction(line.strip()))
+
+    print(''.join(s[-1] for s in stacks))  # Print top crates
 
 
 if __name__ == "__main__":
