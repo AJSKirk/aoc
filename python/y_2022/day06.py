@@ -7,7 +7,9 @@ def packet_start_marker_loc(stream: str, packet_length=4) -> int:
 
 
 def main():
-    print(packet_start_marker_loc(fileinput.input().readline().strip()))
+    stream = fileinput.input().readline().strip()
+    print(f"Packet Start Marker: {packet_start_marker_loc(stream, 4)}")
+    print(f"Message Start Marker: {packet_start_marker_loc(stream, 14)}")
 
 
 if __name__ == "__main__":
